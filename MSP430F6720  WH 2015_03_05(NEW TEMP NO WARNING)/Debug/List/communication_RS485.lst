@@ -1,0 +1,460 @@
+###############################################################################
+#                                                                             #
+#                                                       11/May/2015  15:01:32 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430X                                                    #
+#    __data_model  =  small                                                   #
+#    Source file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\communicatio #
+#                     n_RS485.c                                               #
+#    Command line  =  "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\communicatio #
+#                     n_RS485.c" -lcN "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP43 #
+#                     0F6720  WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  #
+#                      WH 2015_03_05(NEW TEMP NO WARNING)\Debug\List\" -o     #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\" --no_cse    #
+#                     --no_unroll --no_inline --no_code_motion --no_tbaa      #
+#                     --debug -D__MSP430F6720__ -e --double=32 --dlib_config  #
+#                     "C:\Program Files (x86)\IAR Systems\Embedded Workbench  #
+#                     6.4 Evaluation\430\LIB\DLIB\dl430xsfn.h" -I             #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/source/inc\" -I         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/.\" --core=430X         #
+#                     --data_model=small -Ol --multiplier=32                  #
+#                     --multiplier_location=4C0 --hw_workaround=CPU40         #
+#    List file     =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\communicatio #
+#                     n_RS485.lst                                             #
+#    Object file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\communication #
+#                     _RS485.r43                                              #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\source\App\communication_RS485.c
+      1          #include "configuration.h"
+      2          #include "Bus_Raw_Protocol.h"
+      3          #include "source/App/communication_RS485.h"
+      4          
+      5          /******** eUART ********/
+      6          static uint8_t CMD_Decode_Buffer[MAX_CMD_LINE_SIZE] = {0};
+      7          static uint32_t CMD_Decode_Index = 0;
+      8          volatile uint8_t Decode_Flag = 0;  
+      9          
+     10          
+     11          //*****************************************************************************
+     12          //	UART TX/RX Ring Buffer and Index
+     13          //*****************************************************************************
+     14          //
+     15          // Rs485 RX Ring Buffer
+     16          #define UART_RX_BUFFER_SIZE 152
+     17          static uint8_t RX_Tank[UART_RX_BUFFER_SIZE];                   //Recevice software Buffer
+     18          static volatile uint16_t RX_Tank_Read_Index = 0;                         //RX Read point
+     19          static volatile uint16_t RX_Tank_Write_Index = 0;                        //RX write point
+     20          
+     21          
+     22          #define ADVANCE_RX_BUFFER_INDEX(Index) \
+     23                                          (Index) = ((Index) + 1) % UART_RX_BUFFER_SIZE
+     24          
+     25          #define RX_BUFFER_EMPTY         (IsBufferEmpty(&RX_Tank_Read_Index,   \
+     26                                                         &RX_Tank_Write_Index))
+     27          
+     28          //
+     29          //	Rs485 TX Ring Buffer
+     30          #define UART_TX_BUFFER_SIZE 152
+     31          static uint8_t TX_Tank[UART_TX_BUFFER_SIZE];                   //Recevice software Buffer
+     32          static volatile uint16_t TX_Tank_Read_Index = 0;               //Tx Read point
+     33          static volatile uint16_t TX_Tank_Write_Index = 0;              //Tx write point
+     34          
+     35          
+     36          #define ADVANCE_TX_BUFFER_INDEX(Index) \
+     37                                          (Index) = ((Index) + 1) % UART_TX_BUFFER_SIZE
+     38          
+     39          #define TX_BUFFER_EMPTY         (IsBufferEmpty(&TX_Tank_Read_Index,   \
+     40                                                         &TX_Tank_Write_Index))
+     41          
+     42          //*****************************************************************************
+     43          //	RS-485 Tranceiver DE/RE Control for Half Duplex Transmission
+     44          //*****************************************************************************
+     45          #define Enable_Rs485Tx_Tranceiver()	\
+     46          do{									\
+     47            		P2OUT |= BIT0;				\
+     48          		P1OUT |= BIT7;				\
+     49          }while(0)							\
+     50          
+     51          								  
+     52          #define Enable_Rs485Rx_Tranceiver()	\
+     53          do{									\
+     54            		P1OUT &= ~BIT7;				\
+     55          		P2OUT &= ~BIT0;				\
+     56          }while(0)							\
+     57          
+     58          //*****************************************************************************
+     59          //	Activate Tx Tranceiver Offtime Counting Timer
+     60          // - TASSEL_2 = SMCLK
+     61          // - MC_1 = Up mode
+     62          // - TACLR = clear TAR
+     63          //*****************************************************************************	
+     64          #define Activate_TX_OffTimer()		\
+     65          do{									\
+     66            	TA1CTL = TASSEL_2|				\
+     67          			 MC_1|					\
+     68          			 TACLR;					\
+     69          }while(0)
+     70          
+     71          #define Stop_TX_OffTimer()			\
+     72          do{									\
+     73            	TA1CTL = TASSEL_2|				\
+     74          			 MC_0|					\
+     75          			 TACLR;					\
+     76          }while(0)
+     77          
+     78          //*****************************************************************************
+     79          //	UART TX/RX Buffer Checker Functions
+     80          //*****************************************************************************								  
+     81          static uint8_t
+     82          IsBufferEmpty(volatile uint16_t *pulRead,
+     83                        volatile uint16_t *pulWrite)
+     84          {
+     85              uint16_t ulWrite;
+     86              uint16_t ulRead;
+     87          
+     88              ulWrite = *pulWrite;
+     89              ulRead = *pulRead;
+     90          
+     91              return((ulWrite  == ulRead) ? true : false);
+     92          }
+     93          
+     94          uint8_t RS485_0_Getc_NonBlock(uint8_t *Char_Data)
+     95          {
+     96          	//
+     97          	// Check if any char in the rx buffer
+     98          	if ( RX_BUFFER_EMPTY)
+     99                    return false;
+    100          
+    101              //
+    102              // Read a character from the buffer.
+    103              //
+    104              *Char_Data = RX_Tank[RX_Tank_Read_Index];
+    105          	
+    106          	ADVANCE_RX_BUFFER_INDEX( RX_Tank_Read_Index);
+    107              /*RX_Tank_Read_Index = (RX_Tank_Read_Index + 1);
+    108              if ( RX_Tank_Read_Index>= UART_RX_BUFFER_SIZE)
+    109                RX_Tank_Write_Index = 0;*/
+    110          
+    111              return true;
+    112          }
+    113          
+    114          //*****************************************************************************
+    115          //	Timer1 A0 interrupt service routine
+    116          // 	- Automatic DE/RE Control, One-Shot timer.
+    117          //*****************************************************************************		
+    118          #pragma vector=TIMER1_A0_VECTOR
+    119          __interrupt void TIMER1_A0_ISR(void)
+    120          {
+    121           	//
+    122            	// Stop The Timer 
+    123            	Stop_TX_OffTimer();	// Stop Timer
+    124          	
+    125          	//
+    126          	// Close Tx
+    127          	Enable_Rs485Rx_Tranceiver();
+    128          
+    129          }
+    130          
+    131          static uint16_t RX_Tank_Write_Index_Use;
+    132          // USCI_A2 interrupt service routine
+    133          #pragma vector=USCI_A2_VECTOR
+    134          __interrupt void USCI_A2_ISR(void)
+    135          {
+    136          RX_Tank_Write_Index_Use = RX_Tank_Write_Index;
+    137              switch (__even_in_range(UCA2IV, 4))
+    138              {
+    139                  case USCI_NONE: break;              // No interrupt
+    140                  case USCI_UART_UCRXIFG:             // RXIFG
+    141                      /* while (!(UCA2IFG & UCTXIFG));
+    142                        UCA2TXBUF = UCA2RXBUF;
+    143                      break;*/
+    144                      
+    145          			RX_Tank[RX_Tank_Write_Index_Use] = UCA2RXBUF;
+    146          
+    147          			if(RX_Tank[RX_Tank_Write_Index_Use] == Tail_Byte)
+    148          			  Decode_Flag = 1;
+    149          			
+    150          			
+    151          			ADVANCE_RX_BUFFER_INDEX( RX_Tank_Write_Index);
+    152          			/*RX_Tank_Write_Index = (RX_Tank_Write_Index + 1);
+    153          			if ( RX_Tank_Write_Index>= UART_RX_BUFFER_SIZE)
+    154          			  RX_Tank_Write_Index = 0;*/
+    155          
+    156                      break;
+    157                  case USCI_UART_UCTXIFG: 
+    158          			
+    159          		  	//
+    160          		  	// Load Char to Hw Tx Buffer.
+    161          		  	UCA2TXBUF = TX_Tank[TX_Tank_Read_Index];
+    162          			
+    163          			//
+    164          			// Move Index of Tx Ring Buffer.
+    165          			ADVANCE_TX_BUFFER_INDEX(TX_Tank_Read_Index);
+    166          			/*TX_Tank_Read_Index++;
+    167          			if (TX_Tank_Read_Index >= UART_TX_BUFFER_SIZE)
+    168          				TX_Tank_Read_Index = 0;	 */
+    169          			//
+    170          			// Check  Empty
+    171          			if (TX_BUFFER_EMPTY)
+    172          			{
+    173          				//
+    174          			  	// Activate Tranceiver controlling Timer
+    175          			  	Activate_TX_OffTimer();
+    176          			  	//
+    177          			  	// Close TX Interrupt
+    178          			  	UCA2IE &= ~UCTXIE;  
+    179          			}
+    180          		  
+    181          		break;      // TXIFG
+    182          		//
+    183          		// Following is I2C Only Events.
+    184                  case USCI_UART_UCSTTIFG: break;     // TTIFG
+    185                  case USCI_UART_UCTXCPTIFG: break;   // TXCPTIFG
+    186                  default: break;
+    187              }
+    188          }
+    189          
+    190          
+    191          
+    192          void tx_data(uint8_t *str,uint8_t len)       //Transmit data function
+    193          {
+    194            	Enable_Rs485Tx_Tranceiver();
+    195          	for(int i=0; i < len; i++)
+    196          	{
+    197          		while (!(UCA2IFG & UCTXIFG)) ;           // USCI_A0 TX buffer ready?
+    198          	  	UCA2TXBUF = str[i];
+    199          
+    200          	}
+    201          	Activate_TX_OffTimer();
+    202          }
+    203          
+    204          
+    205          //*****************************************************************************
+    206          //	Enhanced Rs-485 Transmission
+    207          //	-Buffered(Non-Block).
+    208          //	-Automatic RE/DE Control structure.
+    209          //*****************************************************************************	
+    210          void Enhance_Rs485_Tx (unsigned char *Buff, unsigned int Size)
+    211          {
+    212            	uint16_t i;
+    213          	//
+    214          	// Stopping TX Tranceiver Timer
+    215          	Stop_TX_OffTimer();	
+    216          	
+    217          	//
+    218            	// Enable TX Tranciever
+    219          	Enable_Rs485Tx_Tranceiver();
+    220          	
+    221          	//
+    222          	// Load Char to Tx Buffer
+    223          	for (i=0; i<Size; i++)
+    224          	{
+    225          		 TX_Tank[TX_Tank_Write_Index] = Buff[i];
+    226          		 
+    227          		 //
+    228          		 // Increase Index
+    229          		 ADVANCE_TX_BUFFER_INDEX(TX_Tank_Write_Index);
+    230          		 /*TX_Tank_Write_Index++;
+    231          		 if (TX_Tank_Write_Index >= UART_TX_BUFFER_SIZE)
+    232          		   TX_Tank_Write_Index = 0;	 */
+    233          	}
+    234          	
+    235          	//
+    236          	// Enable Tx Empty Interrupt
+    237          	UCA2IE |= UCTXIE;  
+    238          }
+    239          
+    240          //*****************************************************************************
+    241          //	Burst Rs-485 Transmission
+    242          //	-Buffered(Non-Block).
+    243          //	-Automatic RE/DE Control structure.
+    244          //*****************************************************************************	
+    245          void Burst_Rs485_Tx (unsigned char *Buff, unsigned int Size)
+    246          {	//!!!! Warnning This function is incompelet.
+    247            	uint16_t i;
+    248          	uint16_t Base;
+    249          	//
+    250          	// Stopping TX Tranceiver Timer
+    251          	Stop_TX_OffTimer();	
+    252          	
+    253                  
+    254                  
+    255          	//
+    256            	// Enable TX Tranciever
+    257          	Enable_Rs485Tx_Tranceiver();
+    258                  
+    259                  //
+    260                  //delay 1000us
+    261                  __delay_cycles(25000);
+    262                  //__delay_cycles(30000);
+    263          	
+    264          	//
+    265          	//	When Buffer is Empty and Tx is not busy,
+    266          	// Excute Burst Transimission to reduce a tx cycle.
+    267          	if (TX_BUFFER_EMPTY && (UCA2IFG & UCTXIFG))
+    268          	{
+    269          		//
+    270          	  	// Send out First Char 
+    271          	  	UCA2TXBUF = Buff[0];
+    272          		Base = 1;
+    273          	}
+    274          	
+    275          	//
+    276          	// Load Char to Tx Buffer
+    277          	for (i=Base; i<Size; i++)
+    278          	{
+    279          		 TX_Tank[TX_Tank_Write_Index] = Buff[i];
+    280          		 
+    281          		 //
+    282          		 // Increase Index
+    283          		 ADVANCE_TX_BUFFER_INDEX(TX_Tank_Write_Index);
+    284          		 /*TX_Tank_Write_Index++;
+    285          		 if (TX_Tank_Write_Index >= UART_TX_BUFFER_SIZE)
+    286          		   TX_Tank_Write_Index = 0;	 */
+    287          	}
+    288          	
+    289          	//
+    290          	// Enable Tx Empty Interrupt
+    291          	UCA2IE |= UCTXIE;  
+    292          }
+    293          
+    294          
+    295          /////
+    296          //	!!Move to Protocol this is RS-485 Port layer
+    297          /////
+    298          
+    299          
+    300          void fill_PV_PowerInfo()                     //fill PV_PowerInfo value
+    301          {
+    302            //pvPowerInfo.DiodeTemp = result_Temp + 50;
+    303            pvPowerInfo.Voltage = V_rms;
+    304            pvPowerInfo.Current = I_rms;
+    305            pvPowerInfo.Power = P_rms;
+    306            pvPowerInfo.AlertState = 0x00000000;
+    307          }
+    308          
+    309          
+    310          void Decode_Proccess ()
+    311          {
+    312               unsigned char Engine_State;
+    313          	//
+    314          	// Pop out Command line
+    315          	while (RS485_0_Getc_NonBlock(&(CMD_Decode_Buffer[CMD_Decode_Index])))
+    316          	{
+    317          		if (CMD_Decode_Index > MAX_CMD_LINE_SIZE)
+    318          		{
+    319          			//
+    320          			// Reset Index
+    321          			CMD_Decode_Index = 0;
+    322          			
+    323          		}
+    324          		//printf("%x ", CMD_Decode_Buffer[CMD_Decode_Index]);
+    325          		CMD_Decode_Index++;
+    326          	}
+    327          	
+    328          	if ( CMD_Decode_Index == 0)
+    329          	   return;
+    330          	   
+    331          	//
+    332          	// Decode Command Line
+    333          	Engine_State = BusRaw_DeviceDecode_Engine ( CMD_Decode_Buffer, CMD_Decode_Index);
+    334          
+    335          	if (Engine_State != PackNotReady)
+    336          	{
+    337          		//
+    338          		// Reset Index
+    339          		CMD_Decode_Index = 0;
+    340          	}
+    341          
+    342          }
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      12  Burst_Rs485_Tx
+            12 -> IsBufferEmpty
+       4  Decode_Proccess
+             4 -> BusRaw_DeviceDecode_Engine
+             4 -> RS485_0_Getc_NonBlock
+      12  Enhance_Rs485_Tx
+       4  IsBufferEmpty
+       6  RS485_0_Getc_NonBlock
+             6 -> IsBufferEmpty
+       4  TIMER1_A0_ISR
+      12  USCI_A2_ISR
+            12 -> IsBufferEmpty
+       4  fill_PV_PowerInfo
+       4  tx_data
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  ??TIMER1_A0_ISR??INTVEC 98
+       2  ??USCI_A2_ISR??INTVEC 104
+     110  Burst_Rs485_Tx
+     256  CMD_Decode_Buffer
+       4  CMD_Decode_Index
+       1  Decode_Flag
+      90  Decode_Proccess
+      70  Enhance_Rs485_Tx
+      16  IsBufferEmpty
+      58  RS485_0_Getc_NonBlock
+     152  RX_Tank
+       2  RX_Tank_Read_Index
+       2  RX_Tank_Write_Index
+       2  RX_Tank_Write_Index_Use
+       2  TA1CTL
+      18  TIMER1_A0_ISR
+     152  TX_Tank
+       2  TX_Tank_Read_Index
+       2  TX_Tank_Write_Index
+       2  UCA2IV
+     130  USCI_A2_ISR
+       2  _A_PAOUT_L
+       2  _A_UCA2IE_L
+       2  _A_UCA2IFG_L
+       2  _A_UCA2RXBUF_L
+       2  _A_UCA2TXBUF_L
+      88  fill_PV_PowerInfo
+      48  tx_data
+
+ 
+ 480 bytes in segment CODE
+  14 bytes in segment DATA16_AN
+ 575 bytes in segment DATA16_Z
+   4 bytes in segment INTVEC
+ 148 bytes in segment ISR_CODE
+ 
+ 628 bytes of CODE  memory
+   0 bytes of CONST memory (+  4 bytes shared)
+ 575 bytes of DATA  memory (+ 14 bytes shared)
+
+Errors: none
+Warnings: none

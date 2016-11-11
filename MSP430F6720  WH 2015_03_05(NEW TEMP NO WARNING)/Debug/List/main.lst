@@ -1,0 +1,172 @@
+###############################################################################
+#                                                                             #
+#                                                       11/May/2015  15:01:34 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430X                                                    #
+#    __data_model  =  small                                                   #
+#    Source file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\main.c       #
+#    Command line  =  "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\main.c"      #
+#                     -lcN "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH  #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\" -o         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\" --no_cse    #
+#                     --no_unroll --no_inline --no_code_motion --no_tbaa      #
+#                     --debug -D__MSP430F6720__ -e --double=32 --dlib_config  #
+#                     "C:\Program Files (x86)\IAR Systems\Embedded Workbench  #
+#                     6.4 Evaluation\430\LIB\DLIB\dl430xsfn.h" -I             #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/source/inc\" -I         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/.\" --core=430X         #
+#                     --data_model=small -Ol --multiplier=32                  #
+#                     --multiplier_location=4C0 --hw_workaround=CPU40         #
+#    List file     =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\main.lst     #
+#    Object file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\main.r43      #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\source\App\main.c
+      1          #include "configuration.h" // configuration of environment file
+      2          #include "Bus_Raw_Protocol.h"
+      3          #include "source/App/DebugUART.h"
+      4          #include "source/App/DCEmeter.h"
+      5          //#include "ToolKit.h"
+      6          //#include <msp430f6720.h>
+      7          /******** SD24B ********/
+      8          uint32_t sample_V,sample_I;       // SD24B Sample
+      9          uint64_t accSample_V,accSample_I; // accumlate ADC Sample
+     10          uint16_t V_rms,I_rms;             // V and I of RMS value
+     11          uint32_t P_rms;                   // P of RMS value
+     12          uint32_t res1;                    // temp for RES1
+     13          uint64_t res2;                    // temp for RES2
+     14          uint16_t sd24bmemL;               // temp for SD24BMEML
+     15          uint32_t sd24bmemH;               // temp for SD24BMEMH
+     16          
+     17          /******** ADC10_A ********/
+     18          uint16_t sample_Temp;             // ADC10 Sample
+     19          int32_t adcresult_Temp;           // ADC10 Sample convert
+     20          int16_t result_Temp;              // Temperature value
+     21          
+     22                                        //Decode_Flag = 1 when read Tail_Byte
+     23          /******** Struct ********/
+     24          struct JB_PowerInfo pvPowerInfo;          // PV_Value Struct
+     25          //static uint16_t RandomDelay;
+     26          
+     27          /******** RESETTIMER ********/
+     28          uint16_t RESETTIMER;                // RESETTIMER
+     29          void main(void)
+     30          {
+     31                  RESETTIMER = 60;
+     32          	Emeter *pDcEmeter;
+     33            	const unsigned char Str[] = "!!! Reset !!! \n\r";
+     34            	SystemInit(); //System Init
+     35          
+     36            	Init_Bus_Loacal_Device_State_Struct();
+     37          
+     38            	__bis_SR_register(GIE); //
+     39          #if 0
+     40          #define INFOD_START   (0x1800)
+     41                  FLASH_segmentErase((uint8_t*)INFOD_START);
+     42                  
+     43          #endif  
+     44            	DB_Burst_Rs485_Tx( (unsigned char *)Str, sizeof(Str));
+     45          	
+     46          	//
+     47          	// Get Pointer of Emeter Struct
+     48          	pDcEmeter = Get_DcEmeter();
+     49            	while(1)
+     50            	{  
+     51              
+     52          		//RandomDelay = (uint16_t ) urand()%500;
+     53          	
+     54          		//
+     55          		// Load DC Emeter 
+     56          		if ( pDcEmeter->SampleDoneFlag == 1)
+     57          		{
+     58          			Cal_DcEmeter_RMS_Value ();
+     59          			Update_PV_Values();
+     60          		}
+     61          	
+     62          
+     63              	if(Decode_Flag)
+     64              	{
+     65               		Decode_Flag = 0;
+     66                		Decode_Proccess();
+     67                
+     68              	}
+     69          		
+     70          		Check_Registed_TimeOut();
+     71            	}
+     72            
+     73          }
+     74          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      24  main
+            24 -> Cal_DcEmeter_RMS_Value
+            24 -> Check_Registed_TimeOut
+            24 -> DB_Burst_Rs485_Tx
+            24 -> Decode_Proccess
+            24 -> Get_DcEmeter
+            24 -> Init_Bus_Loacal_Device_State_Struct
+            24 -> SystemInit
+            24 -> Update_PV_Values
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      17  ?<Constant "!!! Reset !!! \n\r">
+       2  I_rms
+       4  P_rms
+       2  RESETTIMER
+       2  V_rms
+       8  accSample_I
+       8  accSample_V
+       4  adcresult_Temp
+      92  main
+      13  pvPowerInfo
+       4  res1
+       8  res2
+       2  result_Temp
+       4  sample_I
+       2  sample_Temp
+       4  sample_V
+       4  sd24bmemH
+       2  sd24bmemL
+
+ 
+ 92 bytes in segment CODE
+ 17 bytes in segment DATA16_C
+ 73 bytes in segment DATA16_Z
+ 
+ 92 bytes of CODE  memory
+ 17 bytes of CONST memory
+ 73 bytes of DATA  memory
+
+Errors: none
+Warnings: none

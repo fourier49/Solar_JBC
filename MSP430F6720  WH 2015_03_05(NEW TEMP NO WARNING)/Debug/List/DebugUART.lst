@@ -1,0 +1,245 @@
+###############################################################################
+#                                                                             #
+#                                                       11/May/2015  15:01:32 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430X                                                    #
+#    __data_model  =  small                                                   #
+#    Source file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\DebugUART.c  #
+#    Command line  =  "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\DebugUART.c" #
+#                      -lcN "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720     #
+#                     WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH      #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\" -o         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\" --no_cse    #
+#                     --no_unroll --no_inline --no_code_motion --no_tbaa      #
+#                     --debug -D__MSP430F6720__ -e --double=32 --dlib_config  #
+#                     "C:\Program Files (x86)\IAR Systems\Embedded Workbench  #
+#                     6.4 Evaluation\430\LIB\DLIB\dl430xsfn.h" -I             #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/source/inc\" -I         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/.\" --core=430X         #
+#                     --data_model=small -Ol --multiplier=32                  #
+#                     --multiplier_location=4C0 --hw_workaround=CPU40         #
+#    List file     =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\DebugUART.ls #
+#                     t                                                       #
+#    Object file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\DebugUART.r43 #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\source\App\DebugUART.c
+      1          #include "configuration.h"
+      2          #include <stdio.h>
+      3          #include "source/App/DebugUART.h"
+      4          //*****************************************************************************
+      5          //	UART TX/RX Ring Buffer and Index
+      6          //*****************************************************************************
+      7          //
+      8          // Rs485 RX Ring Buffer
+      9          #define DB_UART_RX_BUFFER_SIZE 10
+     10          //static uint8_t RX_Tank[DB_UART_RX_BUFFER_SIZE];                   //Recevice software Buffer
+     11          static volatile uint16_t RX_Tank_Read_Index = 0;                         //RX Read point
+     12          static volatile uint16_t RX_Tank_Write_Index = 0;                        //RX write point
+     13          
+     14          
+     15          #define ADVANCE_RX_BUFFER_INDEX(Index) \
+     16                                          (Index) = ((Index) + 1) % DB_UART_RX_BUFFER_SIZE
+     17          
+     18          #define RX_BUFFER_EMPTY         (IsBufferEmpty(&RX_Tank_Read_Index,   \
+     19                                                         &RX_Tank_Write_Index))
+     20          
+     21          //
+     22          //	Rs485 TX Ring Buffer
+     23          #define DB_UART_TX_BUFFER_SIZE 64
+     24          static uint8_t TX_Tank[DB_UART_TX_BUFFER_SIZE];                   //Recevice software Buffer
+     25          static volatile uint16_t TX_Tank_Read_Index = 0;               //Tx Read point
+     26          static volatile uint16_t TX_Tank_Write_Index = 0;              //Tx write point
+     27          
+     28          
+     29          #define ADVANCE_TX_BUFFER_INDEX(Index) \
+     30                                          (Index) = ((Index) + 1) % DB_UART_TX_BUFFER_SIZE
+     31          
+     32          #define TX_BUFFER_EMPTY         (IsBufferEmpty(&TX_Tank_Read_Index,   \
+     33                                                         &TX_Tank_Write_Index))
+     34          
+     35          
+     36          //*****************************************************************************
+     37          //	UART TX/RX Buffer Checker Functions
+     38          //*****************************************************************************								  
+     39          static uint8_t
+     40          IsBufferEmpty(volatile uint16_t *pulRead,
+     41                        volatile uint16_t *pulWrite)
+     42          {
+     43              uint16_t ulWrite;
+     44              uint16_t ulRead;
+     45          
+     46              ulWrite = *pulWrite;
+     47              ulRead = *pulRead;
+     48          
+     49              return((ulWrite  == ulRead) ? true : false);
+     50          }
+     51          
+     52          
+     53          // USCI_A2 interrupt service routine
+     54          #pragma vector=USCI_A1_VECTOR
+     55          __interrupt void USCI_A1_ISR(void)
+     56          {
+     57              switch (__even_in_range(UCA1IV, 4))
+     58              {
+     59                  case USCI_NONE: break;              // No interrupt
+     60                  case USCI_UART_UCRXIFG:             // RXIFG
+     61                   
+     62          			//RX_Tank[RX_Tank_Write_Index] = UCA1RXBUF;
+     63          			
+     64          			ADVANCE_RX_BUFFER_INDEX( RX_Tank_Write_Index);
+     65          			/*RX_Tank_Write_Index = (RX_Tank_Write_Index + 1);
+     66          			if ( RX_Tank_Write_Index>= DB_UART_RX_BUFFER_SIZE)
+     67          			  RX_Tank_Write_Index = 0;*/
+     68          
+     69                      break;
+     70                  case USCI_UART_UCTXIFG: 
+     71          			
+     72          		  	//
+     73          		  	// Load Char to Hw Tx Buffer.
+     74          		  	UCA1TXBUF = TX_Tank[TX_Tank_Read_Index];
+     75          			
+     76          			//
+     77          			// Move Index of Tx Ring Buffer.
+     78          			ADVANCE_TX_BUFFER_INDEX( TX_Tank_Read_Index);
+     79          			/*TX_Tank_Read_Index++;
+     80          			if (TX_Tank_Read_Index >= DB_UART_TX_BUFFER_SIZE)
+     81          				TX_Tank_Read_Index = 0;	 */
+     82          			//
+     83          			// Check  Empty
+     84          			if (TX_BUFFER_EMPTY)
+     85          			{
+     86          			  	//
+     87          			  	// Close TX Interrupt
+     88          			  	UCA1IE &= ~UCTXIE;  
+     89          			}
+     90          		  
+     91          		break;      // TXIFG
+     92          		//
+     93          		// Following is I2C Only Events.
+     94                  case USCI_UART_UCSTTIFG: break;     // TTIFG
+     95                  case USCI_UART_UCTXCPTIFG: break;   // TXCPTIFG
+     96                  default: break;
+     97              }
+     98          }
+     99          
+    100          
+    101          
+    102          void DB_tx_data(uint8_t *str,uint8_t len)       //Transmit data function
+    103          {
+    104          	for(int i=0; i < len; i++)
+    105          	{
+    106          		while (!(UCA1IFG & UCTXIFG)) ;           // USCI_A0 TX buffer ready?
+    107          	  	UCA2TXBUF = str[i];
+    108          
+    109          	}
+    110          }
+    111          
+    112          
+    113          //*****************************************************************************
+    114          //	Burst Rs-485 Transmission
+    115          //	-Buffered(Non-Block).
+    116          //	-Automatic RE/DE Control structure.
+    117          //*****************************************************************************	
+    118          void DB_Burst_Rs485_Tx (unsigned char *Buff, unsigned int Size)
+    119          {
+    120            	uint16_t i;
+    121          	uint16_t Base;
+    122          	
+    123          	//
+    124          	//	When Buffer is Empty and Tx is not busy,
+    125          	// Excute Burst Transimission to reduce a tx cycle.
+    126          	if (TX_BUFFER_EMPTY && (UCA1IFG & UCTXIFG))
+    127          	{
+    128          		//
+    129          	  	// Send out First Char 
+    130          	  	UCA1TXBUF = Buff[0];
+    131          		Base = 1;
+    132          	}
+    133          	
+    134          	//
+    135          	// Load Char to Tx Buffer
+    136          	for (i=Base; i<Size; i++)
+    137          	{
+    138          		 TX_Tank[TX_Tank_Write_Index] = Buff[i];
+    139          		 //
+    140          		 // Increase Index
+    141          		 ADVANCE_TX_BUFFER_INDEX( TX_Tank_Write_Index);
+    142          		 /*TX_Tank_Write_Index++;
+    143          		 if (TX_Tank_Write_Index >= DB_UART_TX_BUFFER_SIZE)
+    144          		   TX_Tank_Write_Index = 0;	 */
+    145          	}
+    146          	
+    147          	//
+    148          	// Enable Tx Empty Interrupt
+    149          	//UCA1IE |= UCTXIE;  
+    150          }
+    151          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      12  DB_Burst_Rs485_Tx
+            12 -> IsBufferEmpty
+       4  DB_tx_data
+       4  IsBufferEmpty
+      12  USCI_A1_ISR
+            12 -> IsBufferEmpty
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  ??USCI_A1_ISR??INTVEC 106
+      80  DB_Burst_Rs485_Tx
+      32  DB_tx_data
+      16  IsBufferEmpty
+       2  RX_Tank_Write_Index
+      64  TX_Tank
+       2  TX_Tank_Read_Index
+       2  TX_Tank_Write_Index
+       2  UCA1IV
+      90  USCI_A1_ISR
+       2  _A_UCA1IE_L
+       2  _A_UCA1IFG_L
+       2  _A_UCA1TXBUF_L
+       2  _A_UCA2TXBUF_L
+
+ 
+ 128 bytes in segment CODE
+  10 bytes in segment DATA16_AN
+  70 bytes in segment DATA16_Z
+   2 bytes in segment INTVEC
+  90 bytes in segment ISR_CODE
+ 
+ 218 bytes of CODE  memory
+   0 bytes of CONST memory (+  2 bytes shared)
+  70 bytes of DATA  memory (+ 10 bytes shared)
+
+Errors: none
+Warnings: none

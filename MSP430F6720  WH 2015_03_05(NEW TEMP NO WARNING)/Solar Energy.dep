@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project>
+  <fileVersion>2</fileVersion>
+  <fileChecksum>3008084078</fileChecksum>
+  <configuration>
+    <name>Debug</name>
+    <outputs>
+      <file>$PROJ_DIR$\source\App\communication_RS485.c</file>
+      <file>$PROJ_DIR$\source\App\DebugUART.c</file>
+      <file>$PROJ_DIR$\source\App\Interrupt.c</file>
+      <file>$PROJ_DIR$\source\App\ProtocolTimer.c</file>
+      <file>$PROJ_DIR$\source\App\main.c</file>
+      <file>$PROJ_DIR$\source\App\System_Init.c</file>
+      <file>$PROJ_DIR$\source\inc\Bus_Raw_Protocol.h</file>
+      <file>$PROJ_DIR$\source\inc\configuration.h</file>
+      <file>$PROJ_DIR$\source\inc\PVInfoFrame.h</file>
+      <file>$PROJ_DIR$\msp430Lib\hal_pmm.c</file>
+      <file>$PROJ_DIR$\msp430Lib\hal_UCS.c</file>
+      <file>$PROJ_DIR$\source\Network\Bus_Raw_Protocol.c</file>
+      <file>$PROJ_DIR$\msp430Lib\emeter-toolkit-6720.r43</file>
+      <file>$TOOLKIT_DIR$\lib\dlib\dl430xsfn.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
+      <file>$TOOLKIT_DIR$\inc\msp430.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
+      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
+      <file>$TOOLKIT_DIR$\inc\in430.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
+      <file>$PROJ_DIR$\Debug\List\System_Init.lst</file>
+      <file>$PROJ_DIR$\Debug\List\communication_RS485.lst</file>
+      <file>$PROJ_DIR$\Debug\List\DebugUART.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\hal_UCS.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ystdio.h</file>
+      <file>$PROJ_DIR$\Debug\List\Solar Energy.map</file>
+      <file>$PROJ_DIR$\source\App\ProtocolTimer.h</file>
+      <file>$PROJ_DIR$\msp430Lib\iar\extra_peripheral_definitions.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\communication_RS485.r43</file>
+      <file>$PROJ_DIR$\Debug\Obj\ProtocolTimer.pbi</file>
+      <file>$PROJ_DIR$\Debug\List\main.lst</file>
+      <file>$TOOLKIT_DIR$\inc\msp430f6720.h</file>
+      <file>$TOOLKIT_DIR$\config\multiplier32_loc2.xcl</file>
+      <file>$PROJ_DIR$\Debug\Obj\DebugUART.pbi</file>
+      <file>$PROJ_DIR$\source\App\DebugUART.h</file>
+      <file>$TOOLKIT_DIR$\lib\dlib\dl430xsfn.r43</file>
+      <file>$PROJ_DIR$\source\App\communication_RS485.h</file>
+      <file>$PROJ_DIR$\msp430Lib\emeter-toolkit.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\communication_RS485.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
+      <file>$TOOLKIT_DIR$\config\lnk430F6720.xcl</file>
+      <file>$PROJ_DIR$\msp430Lib\hal_UCS.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.r43</file>
+      <file>$PROJ_DIR$\Debug\List\Interrupt.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\System_Init.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\hal_pmm.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\Interrupt.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
+      <file>$PROJ_DIR$\Debug\List\ProtocolTimer.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\System_Init.r43</file>
+      <file>$PROJ_DIR$\msp430Lib\hal_pmm.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\Bus_Raw_Protocol.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\stdio.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\DebugUART.r43</file>
+      <file>$PROJ_DIR$\source\App\DCEmeter.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\hal_UCS.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\Bus_Raw_Protocol.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\Solar Energy.pbd</file>
+      <file>$PROJ_DIR$\Debug\List\Bus_Raw_Protocol.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\ProtocolTimer.r43</file>
+      <file>$PROJ_DIR$\Debug\Exe\Solar Energy.d43</file>
+      <file>$PROJ_DIR$\Debug\Obj\Interrupt.r43</file>
+      <file>$PROJ_DIR$\Debug\Exe\Solar Energy.ulp</file>
+      <file>$PROJ_DIR$\Debug\List\hal_UCS.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\hal_pmm.r43</file>
+      <file>$PROJ_DIR$\Debug\List\hal_pmm.lst</file>
+    </outputs>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 64 25</file>
+        </tool>
+        <tool>
+          <name>ULP430</name>
+          <file> 66</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\source\App\communication_RS485.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 38</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 21 28</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 7 31 18 17 6 8 36</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 7 31 18 17 6 8 36</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\source\App\DebugUART.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 33</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 22 56</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 7 31 18 17 54 19 60 42 13 39 43 16 14 24 34</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 7 31 18 17 54 19 60 42 13 39 43 16 14 24 34</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\source\App\Interrupt.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 48</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 45 65</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 7 31 18 17 37 27 57</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 7 31 18 17 37 27 57</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\source\App\ProtocolTimer.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 29</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 50 63</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 7 31 18 17 26</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 7 31 18 17 26</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\source\App\main.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 55</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 30 44</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 7 31 18 17 6 8 34 57</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 7 31 18 17 6 8 34 57</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\source\App\System_Init.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 46</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 20 51</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 7 31 18 17 41 52 26</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 7 31 18 17 41 52 26</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\msp430Lib\hal_pmm.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 47</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 69 68</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 15 31 18 17 52</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 15 31 18 17 52</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\msp430Lib\hal_UCS.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 58</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 67 23</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 31 18 17 41</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 31 18 17 41</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\source\Network\Bus_Raw_Protocol.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 53</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 62 59</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 49 19 60 42 13 39 43 16 14 54 24 6 8 7 31 18 17 57 34 36 26</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 49 19 60 42 13 39 43 16 14 54 24 6 8 7 31 18 17 57 34 36 26</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Exe\Solar Energy.d43</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 25</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 40 32 59 56 65 63 51 28 23 68 44 35</file>
+        </tool>
+      </inputs>
+    </file>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>XLINK</tool>
+    </forcedrebuild>
+  </configuration>
+  <configuration>
+    <name>Release</name>
+    <outputs/>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>XLINK</tool>
+    </forcedrebuild>
+  </configuration>
+</project>
+
+

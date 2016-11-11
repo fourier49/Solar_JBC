@@ -1,0 +1,1100 @@
+###############################################################################
+#                                                                             #
+#                                                       11/May/2015  15:01:33 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430X                                                    #
+#    __data_model  =  small                                                   #
+#    Source file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\Network\Bus_Raw_ #
+#                     Protocol.c                                              #
+#    Command line  =  "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\Network\Bus_Raw_ #
+#                     Protocol.c" -lcN "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP4 #
+#                     30F6720  WH 2015_03_05(NEW TEMP NO                      #
+#                     WARNING)\MSP430F6720  WH 2015_03_05(NEW TEMP NO         #
+#                     WARNING)\Debug\List\" -o "D:\BLINK\SOLAR.git\2015SJB_Fo #
+#                     rM4\MSP430F6720  WH 2015_03_05(NEW TEMP NO              #
+#                     WARNING)\MSP430F6720  WH 2015_03_05(NEW TEMP NO         #
+#                     WARNING)\Debug\Obj\" --no_cse --no_unroll --no_inline   #
+#                     --no_code_motion --no_tbaa --debug -D__MSP430F6720__    #
+#                     -e --double=32 --dlib_config "C:\Program Files          #
+#                     (x86)\IAR Systems\Embedded Workbench 6.4                #
+#                     Evaluation\430\LIB\DLIB\dl430xsfn.h" -I                 #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/source/inc\" -I         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/.\" --core=430X         #
+#                     --data_model=small -Ol --multiplier=32                  #
+#                     --multiplier_location=4C0 --hw_workaround=CPU40         #
+#    List file     =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\Bus_Raw_Prot #
+#                     ocol.lst                                                #
+#    Object file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\Bus_Raw_Proto #
+#                     col.r43                                                 #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\source\Network\Bus_Raw_Protocol.c
+      1          #include <string.h>
+      2          #include <stdio.h>
+      3          /* Application include files. */	
+      4          //#include "Bus_Protocol/RS485_API.h"
+      5          #include "Bus_Raw_Protocol.h"
+      6          #include "configuration.h"
+      7          
+      8          #include "source/App/DCEmeter.h"
+      9          #include "source/App/DebugUART.h"
+     10          #include "source/App/communication_RS485.h"
+     11          #include "source/App/ProtocolTimer.h"
+     12          //#include "Uart_Com.h"
+     13          
+     14          #define WRONG_WDTPW   (0x5B00u)
+     15          
+     16          //*****************************************************************************
+     17          //
+     18          // Read MAC file
+     19          //
+     20          //*****************************************************************************
+     21          #define EnvStartAdd 0x1800
+     22          #define ContiRetCount	10
+     23          
+     24          typedef struct ENVCONFIG
+     25          {
+     26          	uint8_t Mac[6];
+     27          	uint8_t SeriesNumber[12];
+     28          
+     29          
+     30          }ENVCONFIG;
+     31          ////////////////////////GOBAL VALUE//////////////
+     32          ENVCONFIG G_ENVCONFIG;
+     33          /////////////////////////////////////////////////
+     34          int Get_EvnString(void);
+     35          int SaveMac2Evn(char*Start);
+     36          int SaveSNEvn(char*Start);
+     37          uint8_t* hex_decode(char *in, size_t len, uint8_t *out);
+     38          
+     39          //*****************************************************************************
+     40          //	Macro
+     41          //*****************************************************************************
+     42          #define Flush_Packet_Buffer(Buff, Index)	\
+     43          	do										\
+     44          	{										\
+     45          		while (Index--)						\
+     46          		{									\
+     47          			Buff[Index] = 0x0;				\
+     48          		}									\
+     49          	}while(0)
+     50          
+     51          	  
+     52          #define BRP_Pack_Out(Buf,Lens)	Burst_Rs485_Tx(Buf,Lens) 
+     53          	  
+     54          	  
+     55          #define DbStrPrint(Str)	 DB_Burst_Rs485_Tx( Str , sizeof(Str))
+     56          	  
+     57          /*	  
+     58          void DbStrPrint (unsigned char *Str)
+     59          {
+     60          	DB_Burst_Rs485_Tx( Str , sizeof(Str));
+     61          	DB_Burst_Rs485_Tx("\r\n", 2); 
+     62          }*/
+     63          
+     64          //*****************************************************************************
+     65          //	Gernerate Check Sum for Packet
+     66          //  
+     67          //*****************************************************************************		
+     68          int16_t Generate_CheckSum (unsigned char *Pack, unsigned char Start_Index,unsigned char Lens)
+     69          {
+     70          	unsigned char i;
+     71          	unsigned long Check_Sum = 0;
+     72          	
+     73          	for (i=Start_Index; i< (Lens+Start_Index); i++)
+     74          		Check_Sum += Pack[i];
+     75          	
+     76          	//
+     77          	// Ignaor Saturation 
+     78          	Check_Sum = (Check_Sum&0xff);
+     79          	
+     80          	return Check_Sum;
+     81          }
+     82          
+     83          //#define BRD_Debug
+     84          //#define Display_BRD_INFO
+     85          //#define BRD_Debug_TX_DUMP
+     86          //*****************************************************************************
+     87          //	Bus Raw Data Decoding Engine
+     88          //	
+     89          //*****************************************************************************
+     90          //static unsigned char JB_Local_BusID = 0xfe;
+     91          //static unsigned char JB_Local_MAC[6] = {};
+     92          
+     93          extern uint32_t  urand(void);
+     94          
+     95          static bBusDevState JB_LocalDev;
+     96          
+     97          
+     98          stPackProcess BusRaw_DeviceDecode_Engine (unsigned char *Packet_Buffer, unsigned char Pack_End_Indx)
+     99          {
+    100            	//unsigned char DebStr[6];
+    101            
+    102          	unsigned int i;
+    103          	
+    104          	uint16_t RandomDelay;
+    105          	unsigned char *pMAC;
+    106          	unsigned char *Payload;
+    107          	int16_t Temp = 0;
+    108          	
+    109          	unsigned int OutIndex = 0;
+    110          	
+    111          	unsigned char Decode_State = PackInvalid;
+    112          	unsigned char Header_Index = 0;
+    113          	
+    114          	Bus_Raw_Packet BusRxt_Pack;
+    115              
+    116          #ifdef Display_BRD_INFO
+    117          	printf("Dump Packet : ");
+    118          	for (i=0;i<Pack_End_Indx; i++)
+    119          		printf("%x ", Packet_Buffer[i]);
+    120          	printf("\n");
+    121          #endif	
+    122          	
+    123          #ifdef BRD_Debug
+    124          	printf("Pack End Index : %d\n", Pack_End_Indx);
+    125          #endif		//
+    126          	// Check Command line is valid.
+    127          	if ( Pack_End_Indx == 0)
+    128          		return PackInvalid;
+    129          	
+    130          	while (1)	
+    131          	{
+    132          		//
+    133          		// Search Header Byte 
+    134          		for (i=Header_Index; i<Pack_End_Indx; i++)
+    135          		{
+    136          			if (Packet_Buffer[i] == BRD_Header)
+    137          			{
+    138          				Header_Index = i;
+    139                          
+    140          #ifdef BRD_Debug
+    141                      	printf("Header %x\n", Packet_Buffer[i]);
+    142          #endif
+    143          				break;
+    144          			}
+    145          		}
+    146          		
+    147          		//
+    148          		// Check if Start Byte is Not Finded
+    149          		if (Pack_End_Indx == i)
+    150          		{
+    151          			//
+    152          			// Check If CMD is Not Ready
+    153          			if (Decode_State == CL_Sate_NotReady)
+    154          				return PackNotReady;
+    155          
+    156          			//
+    157          			// Decode_State == CL_Sate_WrStart or CL_State_Invalid
+    158          			// Trush in the buffer , clear buffer
+    159          			Flush_Packet_Buffer(Packet_Buffer, Pack_End_Indx);
+    160          			return PackInvalid;
+    161          		}
+    162          		
+    163          		//
+    164          		// Get Packet Length
+    165          		BusRxt_Pack.PackLens = (unsigned short) ((Packet_Buffer[Header_Index+1]<<8)|Packet_Buffer[Header_Index+2]);
+    166          #ifdef BRD_Debug
+    167          		printf("Pack Lens : %d\n", BusRxt_Pack.PackLens);	
+    168          #endif
+    169          		//
+    170          		// Check Tail Code.
+    171          		if ((BRD_Tail_Index(BusRxt_Pack.PackLens)+Header_Index) == (Pack_End_Indx-1))
+    172          		{
+    173          			//
+    174          			// Detect a Valid Packet.
+    175          			break;
+    176          		}
+    177          		else if ((BRD_Tail_Index(BusRxt_Pack.PackLens)+Header_Index) > (Pack_End_Indx-1))
+    178          		{
+    179          			//
+    180          			// Assume CMD is Not Ready but keep going for Searching
+    181          			Decode_State = CL_Sate_NotReady;
+    182          		}
+    183          		else 
+    184          		{
+    185          			//
+    186          			// Start Index is Wrong
+    187          			Decode_State = CL_Sate_WrStart;
+    188          		}
+    189          
+    190          		//
+    191          		// Going to Search Another Header Code from CMD Line Buffer
+    192          		Header_Index++;
+    193          	}
+    194          #ifdef BRD_Debug
+    195          	printf("Start Extract\n");
+    196          #endif
+    197          
+    198          	
+    199          	//
+    200          	// Extract Packet
+    201          	BusRxt_Pack.CTL_Field = Packet_Buffer[Header_Index+BRD_CTL_Index];	
+    202          	BusRxt_Pack.BusID = Packet_Buffer[Header_Index+BRD_BusID_Index];	
+    203          	BusRxt_Pack.CMD_Type = Packet_Buffer[Header_Index+BRD_Type_Index];	
+    204          	BusRxt_Pack.CheckSum = Packet_Buffer[Header_Index+BRD_ChSUM_Index(BusRxt_Pack.PackLens)];
+    205          #ifdef BRD_Debug
+    206          	printf("Pack Control Field : %x\n", BusRxt_Pack.CTL_Field);	
+    207          	printf("Pack Bus ID : %x\n", BusRxt_Pack.BusID);	
+    208          	printf("Pack CMD Type : %x\n", BusRxt_Pack.CMD_Type);	
+    209          	printf("Pack CheckSum : %x\n", BusRxt_Pack.CheckSum);	
+    210          #endif
+    211          	
+    212          	//
+    213          	// Extract Control Field - Determine Target Device
+    214          	if ( !(BusRxt_Pack.CTL_Field & clFromMaster))
+    215          	{
+    216          		//
+    217          		// Source is not Master ,Ignore Packet
+    218          #ifdef BRD_Debug
+    219          		printf("Source is not Master ,Ignore Packet\n");
+    220          #endif 		
+    221          		//
+    222          		// Flush Command Buffer 
+    223          		Flush_Packet_Buffer(Packet_Buffer, Pack_End_Indx);
+    224          		return PackInvalid;
+    225          	}
+    226          	
+    227          	//
+    228          	// Check Bus ID is Matched.
+    229          	if ( BusRxt_Pack.BusID != JB_LocalDev.BusID)	
+    230          	{
+    231          
+    232          		if ( !(BusRxt_Pack.CTL_Field & clBroadcast))
+    233          		{
+    234          			//DbStrPrint("Fail ID\n\r");
+    235          			//
+    236          			// Check Packet is Scan Event
+    237          			if ( !(BusRxt_Pack.CTL_Field & clScan))
+    238          			{	//
+    239          				// Undefined Packet, Ignore Packet
+    240          
+    241          #ifdef BRD_Debug
+    242          				printf("Undefined BroadPacket, Ignore Packet\n");
+    243          #endif 				
+    244          				//
+    245          				// Flush Command Buffer 
+    246          				Flush_Packet_Buffer(Packet_Buffer, Pack_End_Indx);
+    247          				return PackInvalid;	
+    248          			}
+    249          			
+    250          			if (BusRxt_Pack.CMD_Type != ctCH_SCAN)
+    251          			{	//
+    252          
+    253          				// Command Type is Not Correct, Ignore Packet
+    254          #ifdef BRD_Debug
+    255          				printf("Command Type is Not Correct, Ignore Packet\n");
+    256          #endif 				
+    257          				//
+    258          				// Flush Command Buffer 
+    259          				Flush_Packet_Buffer(Packet_Buffer, Pack_End_Indx);
+    260          				return PackInvalid;						
+    261          			}
+    262          
+    263          		}
+    264          	}
+    265          	
+    266          	
+    267          	//
+    268          	// Generate Check-Sum 
+    269          	Temp = Generate_CheckSum ( Packet_Buffer, (Header_Index+BRD_CTL_Index), BusRxt_Pack.PackLens);
+    270          	
+    271          #ifdef BRD_Debug
+    272          	printf("Check Sum Base: %x\n", Header_Index+BRD_CTL_Index);
+    273          	printf("Generate Check Sum : %x\n", Temp);
+    274          #endif  
+    275          	//
+    276          	// Check Check-Sum
+    277              if (Temp != BusRxt_Pack.CheckSum)
+    278          	{
+    279          #ifdef BRD_Debug
+    280          	printf("Check Sum MissMatch: Source->%x != Local->%d\n", BusRxt_Pack.CheckSum , Temp);
+    281          #endif 
+    282          		Flush_Packet_Buffer(Packet_Buffer, Pack_End_Indx);
+    283          		return PackInvalid;
+    284          	}
+    285          	
+    286          	//
+    287          	// Extract Packet Type
+    288          	switch (BusRxt_Pack.CMD_Type)
+    289          	{
+    290                          //
+    291                          //Reset JB to ColmEmpty
+    292                          case ctReset:
+    293                                  //Reset_ClearRegistFlag_Counter();
+    294                                  //JB_LocalDev.State = ColmEmpty;
+    295                                  WDTCTL = WRONG_WDTPW + WDTHOLD; //RESET
+    296                                  return NoQueueOut;
+    297          		//
+    298          		// PV Value Response
+    299          		case ctPV_Val:
+    300          		  
+    301          		  	Reset_ClearRegistFlag_Counter();
+    302          #ifdef Display_BRD_INFO
+    303          			printf("Need to Send PV Value\n");
+    304          #endif
+    305          			//
+    306          			OutIndex = 0;
+    307          	
+    308          			BusRxt_Pack.CTL_Field = (unsigned char)clToMaster;	
+    309          			BusRxt_Pack.BusID = JB_LocalDev.BusID;	
+    310          			BusRxt_Pack.CMD_Type = (unsigned char)ctPV_Val;	
+    311          			
+    312          			//
+    313          			// Packet Lens
+    314          			BusRxt_Pack.PackLens = (BRD_CTL_Byte+BRD_BusID_Byte+BRD_Type_Byte)+(sizeof(PV_ValueFrame)-1);
+    315          			
+    316          
+    317          			//printf("Packe Lens : %d, frameSize %d\n", BusRxt_Pack.PackLens, sizeof(PV_ValueFrame)-1);
+    318          			
+    319          			Packet_Buffer[OutIndex++] = BRD_Header; 
+    320          			Packet_Buffer[OutIndex++] = (unsigned char)(((BusRxt_Pack.PackLens)<<8)&0xff); 
+    321          			Packet_Buffer[OutIndex++] = (unsigned char)((BusRxt_Pack.PackLens)&0xff); 
+    322          			
+    323          			Packet_Buffer[OutIndex++] = BusRxt_Pack.CTL_Field; 
+    324          			Packet_Buffer[OutIndex++] = BusRxt_Pack.BusID; 
+    325          			Packet_Buffer[OutIndex++] = BusRxt_Pack.CMD_Type;
+    326          			
+    327          			//
+    328          			// Load Payload
+    329                                  //Update_PV_Values (pvPowerInfo);
+    330          			Payload = (unsigned char *)&(JB_LocalDev.PvValue.DiodeTemp);
+    331          			
+    332          			//printf("\n\nShow Value Frame Size : %d\n\n", (sizeof(PV_ValueFrame)- 1));
+    333          			
+    334          				/*JB_LocalDev.PvValue.DiodeTemp = 0x64;
+    335                                            JB_LocalDev.PvValue.Voltage = 0x1987;
+    336                                            JB_LocalDev.PvValue.Current = 0x0538;
+    337                                            JB_LocalDev.PvValue.Power = 0x0001550b;
+    338                                             JB_LocalDev.PvValue.AlertState = 0x0;*/
+    339          			for (i=0; i<(sizeof(PV_ValueFrame)- 1); i++)
+    340          			{
+    341          				Packet_Buffer[OutIndex++] = Payload[i];
+    342          			}
+    343          			
+    344          			Packet_Buffer[OutIndex++] = Generate_CheckSum ( Packet_Buffer, BRD_CTL_Index, BusRxt_Pack.PackLens);
+    345          			Packet_Buffer[OutIndex++] = BRD_Tail;		
+    346          		break;
+    347          		
+    348          		//
+    349          		// PV Info Response
+    350          		case ctPV_Info:
+    351          		  	Reset_ClearRegistFlag_Counter();
+    352          #ifdef Display_BRD_INFO
+    353          			printf("Need to Send PV INFO\n");
+    354          #endif
+    355          			DbStrPrint( "Get INFO");
+    356          			//
+    357          			OutIndex = 0;
+    358          	
+    359          			BusRxt_Pack.CTL_Field = (unsigned char)clToMaster;	
+    360          			BusRxt_Pack.BusID = JB_LocalDev.BusID;	
+    361          			BusRxt_Pack.CMD_Type = (unsigned char)ctPV_Info;	
+    362          			
+    363          			//
+    364          			// Packet Lens
+    365          			BusRxt_Pack.PackLens = (BRD_CTL_Byte+BRD_BusID_Byte+BRD_Type_Byte)+(sizeof(PV_InfoFrame)- 1);
+    366          			
+    367          
+    368          			printf("Packe Lens : %d, frameSize %d\n", BusRxt_Pack.PackLens, sizeof(PV_InfoFrame)-1);
+    369          			
+    370          			Packet_Buffer[OutIndex++] = BRD_Header; 
+    371          			Packet_Buffer[OutIndex++] = (unsigned char)(((BusRxt_Pack.PackLens)<<8)&0xff); 
+    372          			Packet_Buffer[OutIndex++] = (unsigned char)((BusRxt_Pack.PackLens)&0xff); 
+    373          			
+    374          			Packet_Buffer[OutIndex++] = BusRxt_Pack.CTL_Field; 
+    375          			Packet_Buffer[OutIndex++] = BusRxt_Pack.BusID; 
+    376          			Packet_Buffer[OutIndex++] = BusRxt_Pack.CMD_Type;
+    377          			
+    378          			//
+    379          			// Load Payload
+    380          			Payload = (unsigned char *)&(JB_LocalDev.JB_INFO.DeviceMAC[0]);
+    381          			for (i=0; i<(sizeof(PV_InfoFrame)- 1); i++)
+    382          			{
+    383          				Packet_Buffer[OutIndex++] = Payload[i];
+    384          			}
+    385          			
+    386          			Packet_Buffer[OutIndex++] = Generate_CheckSum ( Packet_Buffer, BRD_CTL_Index, BusRxt_Pack.PackLens);
+    387          			Packet_Buffer[OutIndex++] = BRD_Tail;	
+    388          
+    389          		break;
+    390          		
+    391          		
+    392          		//
+    393          		// ID Assignment Acknowldgement.
+    394          		case ctAsign_Ack:
+    395          		  
+    396          
+    397          			
+    398          			//
+    399          			// Load Device MAC
+    400          			//for (i=0; i<6; i++)
+    401          			//	RxQPack->QFIFO[RxQPack->FIFOIdx].PayLoad[i] = Packet_Buffer[(Header_Index+BRD_PayL_Index)+i];
+    402          	
+    403          		return NoQueueOut;
+    404          		
+    405          		case ctCH_SCAN:
+    406          #ifdef Display_BRD_INFO
+    407          			printf("Get Channel Scan \n");
+    408          #endif
+    409                                  RESETTIMER = Packet_Buffer[(Header_Index+BRD_PayL_Index)]*256+Packet_Buffer[(Header_Index+BRD_PayL_Index+1)];
+    410          			//RESETTIMER = 60;
+    411                                  //
+    412          			// Check Local JOining State
+    413          			if (JB_LocalDev.State != DevIsJoin2AM)
+    414          			{
+    415          			  	Reset_ClearRegistFlag_Counter();
+    416          				OutIndex = 0;
+    417          				
+    418          				DbStrPrint("SC");
+    419          				
+    420          				//
+    421          				// Perform Random Delay to Reply Scan 1ms~2000mSec.
+    422          				RandomDelay = (uint16_t ) urand()%2000;
+    423          
+    424          				//
+    425          				// Start Blockig Timer
+    426          				Start_BRD_Timer ( RandomDelay);
+    427          				//RandomDelay
+    428          				
+    429          				//
+    430          				// Block until Lock is release.
+    431          				while ( Get_BRD_TimerLock_State() != 1);
+    432          				  
+    433          
+    434          				
+    435          				BusRxt_Pack.CTL_Field = (unsigned char)clToMaster;	
+    436          				BusRxt_Pack.BusID = JB_LocalDev.BusID;	
+    437          				BusRxt_Pack.CMD_Type = (unsigned char)ctJOIN_Req;	
+    438          				
+    439          				
+    440          				Packet_Buffer[OutIndex++] = BRD_Header; 
+    441          				//
+    442          				// Packet Lens
+    443          				BusRxt_Pack.PackLens = BRD_CTL_Byte+BRD_BusID_Byte+BRD_Type_Byte+6;
+    444          				Packet_Buffer[OutIndex++] = (unsigned char)(((BusRxt_Pack.PackLens)<<8)&0xff); 
+    445          				Packet_Buffer[OutIndex++] = (unsigned char)((BusRxt_Pack.PackLens)&0xff); 
+    446          				
+    447          				Packet_Buffer[OutIndex++] = BusRxt_Pack.CTL_Field; 
+    448          				Packet_Buffer[OutIndex++] = BusRxt_Pack.BusID; 
+    449          				Packet_Buffer[OutIndex++] = BusRxt_Pack.CMD_Type;
+    450          				
+    451          				//
+    452          				// Load Payload - JB MAC
+    453          				for (i=0; i<6; i++)
+    454          					Packet_Buffer[OutIndex++] = JB_LocalDev.JB_INFO.DeviceMAC[i];
+    455          				
+    456          				Packet_Buffer[OutIndex++] = Generate_CheckSum ( Packet_Buffer, BRD_CTL_Index, BusRxt_Pack.PackLens);
+    457          				Packet_Buffer[OutIndex++] = BRD_Tail;
+    458          
+    459          			
+    460          				JB_LocalDev.State = DevIsReqJoin;
+    461          			}
+    462          			else 
+    463          				return NoQueueOut;
+    464          			
+    465          			
+    466          		break;
+    467          		
+    468          		case ctAssignID:
+    469          #ifdef Display_BRD_INFO
+    470          			printf("Get Assign ID\n");
+    471          #endif			
+    472          			//DbStrPrint("AID");
+    473          			//
+    474          		  	// Match MAC
+    475          		  	for (i=0; i<6; i++)
+    476          		  	{
+    477          				if (Packet_Buffer[(Header_Index+BRD_PayL_Index+1)+i] != JB_LocalDev.JB_INFO.DeviceMAC[i])
+    478          				  break;
+    479          			}
+    480          		  	if (i != 6)	// MAC is Not Match
+    481          		    	return NoQueueOut;
+    482          			
+    483          			//
+    484          			// Update Local Bus ID and State, if assignment is valid.
+    485          			//printf("DB State : %x\n", Packet_Buffer[Header_Index+BRD_PayL_Index]);
+    486          			
+    487          			if ( Packet_Buffer[Header_Index+BRD_PayL_Index] == (unsigned char) abBusIDisValid)
+    488          			{
+    489          				pMAC = (unsigned char *)&(Packet_Buffer[Header_Index+BRD_PayL_Index+1]);	
+    490          #ifdef BRD_Debug
+    491          				printf("Get BusID : %d\n", BusRxt_Pack.BusID);
+    492          #endif		
+    493          				//
+    494          				// Matching Device MAC 
+    495          				for (i=0; i<6; i++)
+    496          				{
+    497          					if ( pMAC[i] != JB_LocalDev.JB_INFO.DeviceMAC[i])
+    498          						break;
+    499          				}
+    500          				if ( i == 6)
+    501          				{	//
+    502          					// Matching
+    503          					JB_LocalDev.BusID = BusRxt_Pack.BusID;
+    504          					//JB_LocalDev.State = DevIsJoin2AM;
+    505                                                  JB_LocalDev.State = DevIsReqJoin;
+    506          					
+    507          #ifdef Display_BRD_INFO
+    508          					printf("Get BusID : %d\n", JB_LocalDev.BusID);
+    509          #endif				
+    510          					DbStrPrint("Get ID");
+    511          					/*DebStr[0] = BusRxt_Pack.BusID + 0x30;
+    512          					DebStr[1] = 0x0;
+    513          					
+    514          					DB_Burst_Rs485_Tx( DebStr, 1);
+    515          					DbStrPrint(DebStr);*/
+    516          					
+    517          					
+    518          					//
+    519          					// Send Ack
+    520          					OutIndex = 0;
+    521          					
+    522          					BusRxt_Pack.CTL_Field = (unsigned char)clToMaster;	
+    523          					BusRxt_Pack.BusID = JB_LocalDev.BusID;	
+    524          					BusRxt_Pack.CMD_Type = (unsigned char)ctAsign_Ack;	
+    525          					
+    526          					
+    527          					Packet_Buffer[OutIndex++] = BRD_Header; 
+    528          					//
+    529          					// Packet Lens
+    530          					BusRxt_Pack.PackLens = (BRD_CTL_Byte+BRD_BusID_Byte+BRD_Type_Byte)+6;
+    531          					Packet_Buffer[OutIndex++] = (unsigned char)(((BusRxt_Pack.PackLens)<<8)&0xff); 
+    532          					Packet_Buffer[OutIndex++] = (unsigned char)((BusRxt_Pack.PackLens)&0xff); 
+    533          					
+    534          					Packet_Buffer[OutIndex++] = BusRxt_Pack.CTL_Field; 
+    535          					Packet_Buffer[OutIndex++] = BusRxt_Pack.BusID; 
+    536          					Packet_Buffer[OutIndex++] = BusRxt_Pack.CMD_Type;
+    537          					
+    538          					//
+    539          					// Load Payload - JB MAC
+    540          					for (i=0; i<6; i++)
+    541          						Packet_Buffer[OutIndex++] = JB_LocalDev.JB_INFO.DeviceMAC[i];
+    542          					
+    543          					Packet_Buffer[OutIndex++] = Generate_CheckSum ( Packet_Buffer, BRD_CTL_Index, BusRxt_Pack.PackLens);
+    544          					Packet_Buffer[OutIndex++] = BRD_Tail;
+    545          	
+    546          
+    547          
+    548          #ifdef Display_BRD_INFO
+    549          					printf("Junction Box iS Joining to Array Manager\n");
+    550          #endif
+    551          				}			
+    552          			}
+    553          
+    554          		break;
+    555          			
+    556          		case ctACK_Resp:
+    557          #ifdef Display_BRD_INFO
+    558          			printf("Get ACK Response\n");	
+    559          #endif
+    560          			JB_LocalDev.State = DevIsJoin2AM;	
+    561          #ifdef Display_BRD_INFO
+    562          			printf("Junction Box iS Joining to Array Manager\n");
+    563          #endif	
+    564          			
+    565          		return NoQueueOut;
+    566          
+    567          		
+    568          		default:
+    569          #ifdef Display_BRD_INFO
+    570          			printf("Warnning : Undefined CMD Type\n");
+    571          #endif			
+    572          			//
+    573          			// Flush Command Buffer 
+    574          			Flush_Packet_Buffer(Packet_Buffer, Pack_End_Indx);
+    575          		return PackInvalid;
+    576          		
+    577          	}
+    578          				
+    579          
+    580                  BRP_Pack_Out( Packet_Buffer,OutIndex);
+    581          
+    582          	//DB_Burst_Rs485_Tx( Packet_Buffer, OutIndex);
+    583          	
+    584          #ifdef BRD_Debug_TX_DUMP
+    585          	printf("\n: Dump TX Pack :\n");
+    586          	for (i=0; i<OutIndex; i++)
+    587          		printf("%x ", Packet_Buffer[i]);
+    588          	printf("\n\n");
+    589          	printf("Output Lens : %d\n",OutIndex);
+    590          #endif	
+    591          	//
+    592          	// Flush Packet Buffer 
+    593          	if ( OutIndex> Pack_End_Indx)
+    594          		Flush_Packet_Buffer(Packet_Buffer, OutIndex);
+    595          	else
+    596          		Flush_Packet_Buffer(Packet_Buffer, Pack_End_Indx);
+    597          	
+    598          
+    599          
+    600          	return QueueOut;
+    601          }
+    602          #define DB_JB_infoValue
+    603          void Update_PV_Values (void)
+    604          {
+    605          	/*JB_LocalDev.PvValue.DiodeTemp = dt.DiodeTemp;
+    606          	JB_LocalDev.PvValue.Voltage = dt.Voltage;
+    607          	JB_LocalDev.PvValue.Current = dt.Current;
+    608          	JB_LocalDev.PvValue.Power = dt.Power;
+    609          	JB_LocalDev.PvValue.AlertState = dt.AlertState;*/
+    610            	Emeter *pDcEmeter;
+    611            	
+    612          	pDcEmeter = Get_DcEmeter();
+    613          	if ( (pDcEmeter->SampleDoneFlag) == 0x01)
+    614          	{
+    615          	  if(pDcEmeter->Diode_Temp<0)
+    616                    {
+    617                      JB_LocalDev.PvValue.DiodeTemp = (-(pDcEmeter->Diode_Temp))+150;   ////-40 - 150
+    618                    } 
+    619                    else
+    620                    {    
+    621                    JB_LocalDev.PvValue.DiodeTemp = (pDcEmeter->Diode_Temp);
+    622                    }
+    623          	  JB_LocalDev.PvValue.Voltage = (pDcEmeter->DigiVrms)/10; 		// Truncate to xx.xx Vol
+    624          	  JB_LocalDev.PvValue.Current = (pDcEmeter->DigiIrms)/10;	  	// Trncate to xx.xx A
+    625          	  JB_LocalDev.PvValue.Power = (pDcEmeter->DigiavgPower)/10;
+    626          	  JB_LocalDev.PvValue.AlertState = 0;
+    627          	  
+    628          	  pDcEmeter->SampleDoneFlag = 0;
+    629          	}
+    630                  
+    631          #ifdef DB_JB_infoValue
+    632                  //unsigned 
+    633                  char buf [100];
+    634                  //char i;
+    635                  int Convert_Temp;
+    636                  //
+    637                  // Display Voltage to Rs232
+    638                  sprintf(buf,"Voltage : %u mV\n\r",JB_LocalDev.PvValue.Voltage * 10);
+    639                  for(int i = 0;buf[i]!='\0';i++){
+    640                    while (!(UCA1IFG & UCTXIFG)) ;  // USCI_A0 TX buffer ready?
+    641                    UCA1TXBUF = buf[i];             // TX -> RXed character
+    642                  }
+    643                  
+    644                  //
+    645                  // Display Current to Rs232    
+    646                  sprintf(buf,"Current : %u mA\n\r",(int)pDcEmeter->DigiIrms / 10);
+    647                  for(int i = 0;buf[i]!='\0';i++){
+    648                    while (!(UCA1IFG & UCTXIFG)) ;  // USCI_A0 TX buffer ready?
+    649                    UCA1TXBUF = buf[i];             // TX -> RXed character
+    650                  }
+    651                  
+    652                  //
+    653                  // Display Power to Rs232
+    654                  if(pDcEmeter->DigiavgPower > 65536)
+    655                  {
+    656                    unsigned int h_temp = pDcEmeter->DigiavgPower / 100;
+    657                    unsigned int l_temp = pDcEmeter->DigiavgPower % 100;
+    658                    sprintf(buf,"Power : %u%u mW\n\r",h_temp,l_temp);
+    659                  }
+    660                  else
+    661                    sprintf(buf,"Power : %u mW\n\r",(int)pDcEmeter->DigiavgPower);
+    662                  
+    663                  for(int i = 0;buf[i]!='\0';i++){
+    664                    while (!(UCA1IFG & UCTXIFG)) ;  // USCI_A0 TX buffer ready?
+    665                    UCA1TXBUF = buf[i];             // TX -> RXed character
+    666                  }
+    667                  
+    668                  //
+    669                  // Display DiodeTemp to Rs232
+    670                  Convert_Temp = JB_LocalDev.PvValue.DiodeTemp;
+    671                  sprintf(buf,"DiodeTemp : %d ¢J\n\r-----------------------\n\r",Convert_Temp-50);
+    672                  for(int i = 0;buf[i]!='\0';i++){
+    673                    while (!(UCA1IFG & UCTXIFG)) ;  // USCI_A0 TX buffer ready?
+    674                    UCA1TXBUF = buf[i];             // TX -> RXed character
+    675                  }
+    676                  
+    677                  //
+    678                  //Print_Debug_Mode
+    679                  sprintf(buf,"JB_LocalDev.State : %x\n\rRESETTIMER : %d\n\r-----------------------\n\r",JB_LocalDev.State,RESETTIMER);
+    680                  for(int i = 0;buf[i]!='\0';i++){
+    681                    while (!(UCA1IFG & UCTXIFG)) ;  // USCI_A0 TX buffer ready?
+    682                    UCA1TXBUF = buf[i];             // TX -> RXed character
+    683                  }
+    684                  
+    685                  //
+    686                  //Print_ADC_Debug_Mode
+    687                  sprintf(buf,"A/D : %d\n\r-----------------------\n\r",ADC10MEM0);
+    688                  for(int i = 0;buf[i]!='\0';i++){
+    689                    while (!(UCA1IFG & UCTXIFG)) ;  // USCI_A0 TX buffer ready?
+    690                    UCA1TXBUF = buf[i];             // TX -> RXed character
+    691                  }
+    692                 
+    693                  
+    694          #endif
+    695                  
+    696          }
+    697          #define JB_SerialNum 	"JB1345-785"
+    698          #define JB_FirVersion	"JB TDK v0.4b"
+    699          #define JB_HardVersion	"JB Single v0.5b"
+    700          #define JB_DeviceSpec	"Rush Plumber"
+    701          #define JB_MANU_Date	"20121221"	
+    702          extern ENVCONFIG G_ENVCONFIG;
+    703          void Init_Bus_Loacal_Device_State_Struct (void)
+    704          {
+    705          	unsigned int i;
+    706          	//
+    707          	// Load MAC From ROM
+    708          	/*JB_LocalDev.JB_INFO.DeviceMAC[0] = 0xdc;	
+    709          	JB_LocalDev.JB_INFO.DeviceMAC[1] = 0xa1;	
+    710          	JB_LocalDev.JB_INFO.DeviceMAC[2] = 0xa2;	
+    711          	JB_LocalDev.JB_INFO.DeviceMAC[3] = 0xa3;	
+    712          	JB_LocalDev.JB_INFO.DeviceMAC[4] = 0xcc;	
+    713          	JB_LocalDev.JB_INFO.DeviceMAC[5] = 0x29;*/
+    714                  //
+    715          	// Load MAC From INFO FLASH @1800~@1805
+    716                  Get_EvnString();
+    717                  JB_LocalDev.JB_INFO.DeviceMAC[0] = G_ENVCONFIG.Mac[0];	
+    718          	JB_LocalDev.JB_INFO.DeviceMAC[1] = G_ENVCONFIG.Mac[1];	
+    719          	JB_LocalDev.JB_INFO.DeviceMAC[2] = G_ENVCONFIG.Mac[2];	
+    720          	JB_LocalDev.JB_INFO.DeviceMAC[3] = G_ENVCONFIG.Mac[3];	
+    721          	JB_LocalDev.JB_INFO.DeviceMAC[4] = G_ENVCONFIG.Mac[4];	
+    722          	JB_LocalDev.JB_INFO.DeviceMAC[5] = G_ENVCONFIG.Mac[5];
+    723                  //
+    724          	// Load MAC From INFO FLASH @1800~@1805 OLD
+    725                  /*unsigned char  *mac_ptr = (unsigned char *)0x1800;
+    726                  JB_LocalDev.JB_INFO.DeviceMAC[0] = *mac_ptr;
+    727                  mac_ptr = (unsigned char *)0x1801;	
+    728          	JB_LocalDev.JB_INFO.DeviceMAC[1] = *mac_ptr;
+    729                  mac_ptr = (unsigned char *)0x1802;
+    730          	JB_LocalDev.JB_INFO.DeviceMAC[2] = *mac_ptr;	
+    731                  mac_ptr = (unsigned char *)0x1803;
+    732          	JB_LocalDev.JB_INFO.DeviceMAC[3] = *mac_ptr;
+    733                  mac_ptr = (unsigned char *)0x1804;	
+    734          	JB_LocalDev.JB_INFO.DeviceMAC[4] = *mac_ptr;
+    735                  mac_ptr = (unsigned char *)0x1805;
+    736          	JB_LocalDev.JB_INFO.DeviceMAC[5] = *mac_ptr;*/
+    737          	
+    738          	
+    739          	//
+    740          	// Lonad Infor From ROM
+    741                  
+    742              	for (i=0; i<22; i++)
+    743          	{   
+    744                   if ( G_ENVCONFIG.SeriesNumber[i] == '\0')
+    745          		{
+    746          			JB_LocalDev.JB_INFO.SerialNum[i] = '\0';
+    747          			break;
+    748          		} 
+    749                  JB_LocalDev.JB_INFO.SerialNum[i]=G_ENVCONFIG.SeriesNumber[i];	
+    750                  
+    751                  }
+    752                  JB_LocalDev.JB_INFO.SerialNum[23] = '\0';
+    753                  
+    754          #if 0       
+    755          	for (i=0; i<22; i++)
+    756          	{
+    757          		if ( JB_SerialNum[i] == '\0')
+    758          		{
+    759          			JB_LocalDev.JB_INFO.SerialNum[i] = '\0';
+    760          			break;
+    761          		}
+    762          		JB_LocalDev.JB_INFO.SerialNum[i] = 	JB_SerialNum[i];
+    763          	}
+    764          	JB_LocalDev.JB_INFO.SerialNum[23] = '\0';
+    765          #endif	
+    766          	//
+    767          	// Firmware Version.
+    768          	for (i=0; i<22; i++)
+    769          	{
+    770          		if ( JB_FirVersion[i] == '\0')
+    771          		{
+    772          			JB_LocalDev.JB_INFO.FirmVer[i] = '\0';
+    773          			break;
+    774          		}
+    775          		JB_LocalDev.JB_INFO.FirmVer[i] = JB_FirVersion[i];
+    776          	}
+    777          	JB_LocalDev.JB_INFO.FirmVer[23] = '\0';	
+    778          	
+    779          	//
+    780          	// Load Hardware Version
+    781          	for (i=0; i<22; i++)
+    782          	{
+    783          		if ( JB_HardVersion[i] == '\0')
+    784          		{
+    785          			JB_LocalDev.JB_INFO.HardVer[i] = '\0';
+    786          			break;
+    787          		}
+    788          		JB_LocalDev.JB_INFO.HardVer[i] = JB_HardVersion[i];
+    789          	}
+    790          	JB_LocalDev.JB_INFO.HardVer[23] = '\0';	
+    791          	
+    792          	//
+    793          	// Load Device Specification.
+    794          	for (i=0; i<22; i++)
+    795          	{
+    796          		if ( JB_FirVersion[i] == '\0')
+    797          		{
+    798          			JB_LocalDev.JB_INFO.Dev[i] = '\0';
+    799          			break;
+    800          		}
+    801          		JB_LocalDev.JB_INFO.Dev[i] = JB_DeviceSpec[i];
+    802          	}
+    803          	JB_LocalDev.JB_INFO.Dev[23] = '\0';		
+    804          	
+    805          	//
+    806          	// Load Production Date
+    807          	for (i=0; i<8; i++)
+    808          	{
+    809          		JB_LocalDev.JB_INFO.ManuDate[i] = JB_MANU_Date[i];
+    810          	}
+    811          
+    812          
+    813          /*	JB_LocalDev.JB_INFO.FirmVer[24];		
+    814          	JB_LocalDev.JB_INFO.HardVer[24];		// Hardware Version.
+    815          	JB_LocalDev.JB_INFO.Dev[24];			// 	
+    816          	JB_LocalDev.JB_INFO.ManuDate[8];	*/
+    817          	//
+    818          	// Reset State and Bus ID
+    819          	JB_LocalDev.BusID = BRD_Dev_Default_ID;
+    820          	JB_LocalDev.State = ColmEmpty;	
+    821          	
+    822          	
+    823          		
+    824          	//Update_PV_Values ();
+    825          }
+    826          
+    827          
+    828          //*****************************************************************************
+    829          //	Check Registed Timeout
+    830          // 	- Put this function to main loop for checking the link between 
+    831          //	array manager and junction box.
+    832          //*****************************************************************************	
+    833          void Check_Registed_TimeOut (void)
+    834          {
+    835          	if ( GET_ClearRegistFlag() == 1)
+    836          	{
+    837          		//
+    838          	  	// It's too long to get requestion from Array Manager
+    839          	  	// Clear the state of Registed to Array Manger.
+    840          		//JB_LocalDev.State = 0;
+    841                          WDTCTL = WRONG_WDTPW + WDTHOLD; //RESET
+    842          	}
+    843          }
+    844          //*****************************************************************************
+    845          //	Read MAC file
+    846          //*****************************************************************************	
+    847          int Get_EvnString(void)
+    848          {
+    849          	char* ptr ;
+    850          	int stringCount=0;
+    851          	char StringBuf[10][50];
+    852          	char TempBuf[100];
+    853          	int tempbufindex=0;
+    854          	int retConut=0;
+    855          	char* parserStart;
+    856          	int i;
+    857          
+    858          	ptr=(char*)EnvStartAdd;
+    859          	memset(StringBuf,0,sizeof(StringBuf));
+    860          
+    861          	while(retConut<ContiRetCount && tempbufindex<40)
+    862          	{
+    863          
+    864          		if(*ptr==0x0d && *(ptr+1)==0x0a)
+    865          		{
+    866          			TempBuf[tempbufindex]=0;
+    867          			strcpy(StringBuf[stringCount],TempBuf);
+    868          			stringCount+=1;
+    869          			tempbufindex=0;
+    870          			retConut=0;
+    871          			ptr++;
+    872          		}
+    873          		else
+    874          		{
+    875          			if(*ptr==0xff)
+    876          			{
+    877          				retConut++;
+    878          			}
+    879          			TempBuf[tempbufindex++]=*ptr;
+    880          
+    881          		}
+    882          
+    883          		ptr++;
+    884          
+    885          
+    886          	}
+    887          
+    888          	for( i=0;i<stringCount;i++)
+    889          	{
+    890          		if((parserStart=strstr(StringBuf[i],"MAC=")))
+    891          		{
+    892          			SaveMac2Evn(parserStart+strlen("MAC="));
+    893          		}
+    894          
+    895          		if((parserStart=strstr(StringBuf[i],"SN=")))
+    896          		{
+    897          			SaveSNEvn(parserStart+strlen("SN="));
+    898          		}
+    899          
+    900          	}
+    901          
+    902          
+    903          	return stringCount;
+    904          }
+    905          
+    906          int SaveMac2Evn(char*Start)
+    907          {
+    908          		uint8_t RetHex[1];
+    909          
+    910          
+    911          		G_ENVCONFIG.Mac[0]=*hex_decode(Start,2,RetHex);
+    912          		Start=strstr(Start,":")+1;
+    913          		G_ENVCONFIG.Mac[1]=*hex_decode(Start,2,RetHex);
+    914          		Start=strstr(Start,":")+1;
+    915          		G_ENVCONFIG.Mac[2]=*hex_decode(Start,2,RetHex);
+    916          		Start=strstr(Start,":")+1;
+    917          		G_ENVCONFIG.Mac[3]=*hex_decode(Start,2,RetHex);
+    918          		Start=strstr(Start,":")+1;
+    919          		G_ENVCONFIG.Mac[4]=*hex_decode(Start,2,RetHex);
+    920          		Start=strstr(Start,":")+1;
+    921          		G_ENVCONFIG.Mac[5]=*hex_decode(Start,2,RetHex);
+    922          
+    923          		return 0;
+    924          }
+    925          
+    926          int SaveSNEvn(char*Start)
+    927          {
+    928          
+    929                          memset(G_ENVCONFIG.SeriesNumber,0,sizeof(G_ENVCONFIG.SeriesNumber));
+    930                          
+    931                          strcpy((char*)G_ENVCONFIG.SeriesNumber,Start);
+    932                          
+    933          		return 0;
+    934          }
+    935          
+    936          uint8_t* hex_decode(char *in, size_t len, uint8_t *out)
+    937          {
+    938              unsigned int i, t, hn, ln;
+    939          
+    940              for (t = 0,i = 0; i < len; i+=2,++t) {
+    941          
+    942                      hn = in[i] > '9' ? (in[i]|32) - 'a' + 10 : in[i] - '0';
+    943                      ln = in[i+1] > '9' ? (in[i+1]|32) - 'a' + 10 : in[i+1] - '0';
+    944          
+    945                      out[t] = (hn << 4 ) | ln;
+    946          
+    947              }
+    948              return out;
+    949          
+    950          }
+    951          
+    952          
+    953          
+    954          
+    955          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      28  BusRaw_DeviceDecode_Engine
+             24 -> Burst_Rs485_Tx
+             24 -> DB_Burst_Rs485_Tx
+             24 -> Generate_CheckSum
+             24 -> Get_BRD_TimerLock_State
+             24 -> Reset_ClearRegistFlag_Counter
+             24 -> Start_BRD_Timer
+             28 -> printf
+             24 -> urand
+       4  Check_Registed_TimeOut
+              4 -> GET_ClearRegistFlag
+      12  Generate_CheckSum
+     612  Get_EvnString
+            612 -> SaveMac2Evn
+            612 -> SaveSNEvn
+            612 -> memset
+            612 -> strcpy
+            612 -> strstr
+       4  Init_Bus_Loacal_Device_State_Struct
+              4 -> Get_EvnString
+       8  SaveMac2Evn
+              8 -> hex_decode
+              8 -> strstr
+       6  SaveSNEvn
+              6 -> memset
+              6 -> strcpy
+     120  Update_PV_Values
+            116 -> Get_DcEmeter
+            116 -> _Div64u
+            116 -> _Mod64u
+            118 -> sprintf
+            120 -> sprintf
+      12  hex_decode
+       4  strstr
+              4 -> __iar_Strstr
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       9  ?<Constant "20121221">
+       2  ?<Constant ":">
+      36  ?<Constant "A/D : %d\n\r-----------...">
+      18  ?<Constant "Current : %u mA\n\r">
+      45  ?<Constant "DiodeTemp : %d \242J\n\r--...">
+       7  ?<Constant "Get ID">
+       9  ?<Constant "Get INFO">
+      16  ?<Constant "JB Single v0.5b">
+      13  ?<Constant "JB TDK v0.4b">
+      67  ?<Constant "JB_LocalDev.State : %...">
+       5  ?<Constant "MAC=">
+      31  ?<Constant "Packe Lens : %d, fram...">
+      16  ?<Constant "Power : %u mW\n\r">
+      18  ?<Constant "Power : %u%u mW\n\r">
+      13  ?<Constant "Rush Plumber">
+       3  ?<Constant "SC">
+       4  ?<Constant "SN=">
+      18  ?<Constant "Voltage : %u mV\n\r">
+    1424  BusRaw_DeviceDecode_Engine
+      16  Check_Registed_TimeOut
+      18  G_ENVCONFIG
+      58  Generate_CheckSum
+     230  Get_EvnString
+     196  Init_Bus_Loacal_Device_State_Struct
+     128  JB_LocalDev
+     180  SaveMac2Evn
+      34  SaveSNEvn
+     600  Update_PV_Values
+       2  _A_ADC10MEM0_L
+       2  _A_UCA1IFG_L
+       2  _A_UCA1TXBUF_L
+       2  _A_WDTCTL_L
+     126  hex_decode
+       4  strstr
+
+ 
+ 2 868 bytes in segment CODE
+     8 bytes in segment DATA16_AN
+   330 bytes in segment DATA16_C
+   146 bytes in segment DATA16_Z
+ 
+ 2 864 bytes of CODE  memory (+ 4 bytes shared)
+   330 bytes of CONST memory
+   146 bytes of DATA  memory (+ 8 bytes shared)
+
+Errors: none
+Warnings: none

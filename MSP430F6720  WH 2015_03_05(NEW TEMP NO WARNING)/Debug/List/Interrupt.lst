@@ -1,0 +1,476 @@
+###############################################################################
+#                                                                             #
+#                                                       11/May/2015  15:01:33 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430X                                                    #
+#    __data_model  =  small                                                   #
+#    Source file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\Interrupt.c  #
+#    Command line  =  "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\Interrupt.c" #
+#                      -lcN "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720     #
+#                     WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH      #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\" -o         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\" --no_cse    #
+#                     --no_unroll --no_inline --no_code_motion --no_tbaa      #
+#                     --debug -D__MSP430F6720__ -e --double=32 --dlib_config  #
+#                     "C:\Program Files (x86)\IAR Systems\Embedded Workbench  #
+#                     6.4 Evaluation\430\LIB\DLIB\dl430xsfn.h" -I             #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/source/inc\" -I         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/.\" --core=430X         #
+#                     --data_model=small -Ol --multiplier=32                  #
+#                     --multiplier_location=4C0 --hw_workaround=CPU40         #
+#    List file     =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\Interrupt.ls #
+#                     t                                                       #
+#    Object file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\Interrupt.r43 #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\source\App\Interrupt.c
+      1          #include "configuration.h"
+      2          
+      3          #include "msp430Lib/emeter-toolkit.h"
+      4          
+      5          #include "source/App/DCEmeter.h"
+      6          
+      7          
+      8          #define sqac_voltage                sqac64_24
+      9          #define sqac_current                sqac64_24
+     10          #define div_dc_voltage(y,x)         *y/x
+     11          #define div_dc_current(y,x)         *y/x
+     12          
+     13          typedef union
+     14          {
+     15              int16_t by16[2];
+     16              int32_t by32;
+     17          } sh_lo_t;
+     18          
+     19          
+     20          
+     21          
+     22          
+     23          
+     24          
+     25          static Emeter DcEmeter = {0};
+     26          
+     27          
+     28          Emeter *Get_DcEmeter (void)
+     29          {	
+     30          	return &DcEmeter;
+     31          }
+     32          
+     33          
+     34          //unsigned int Indx = 0;
+     35          //unsigned char Buf[20] = {0};
+     36          
+     37          
+     38          
+     39          //*****************************************************************************
+     40          //
+     41          // Random Number Generator Seed Value
+     42          //
+     43          //*****************************************************************************
+     44          static uint32_t g_ulRandomSeed = 1;
+     45          
+     46          //*****************************************************************************
+     47          //
+     48          //! Set the random number generator seed.
+     49          //!
+     50          //! \param ulSeed is the new seed value to use for the random number generator.
+     51          //!
+     52          //! This function is very similar to the C library <tt>srand()</tt> function.
+     53          //! It will set the seed value used in the <tt>urand()</tt> function.
+     54          //!
+     55          //! \return None
+     56          //
+     57          //*****************************************************************************
+     58          void
+     59          usrand(uint16_t ulSeed)
+     60          {
+     61              g_ulRandomSeed = ulSeed;
+     62          }
+     63          
+     64          //*****************************************************************************
+     65          //
+     66          //! Generate a new (pseudo) random number
+     67          //!
+     68          //! This function is very similar to the C library <tt>rand()</tt> function.
+     69          //! It will generate a pseudo-random number sequence based on the seed value.
+     70          //!
+     71          //! \return A pseudo-random number will be returned.
+     72          //
+     73          //*****************************************************************************
+     74          uint32_t  urand(void)
+     75          {
+     76              //
+     77              // Generate a new pseudo-random number with a linear congruence random
+     78              // number generator.  This new random number becomes the seed for the next
+     79              // random number.
+     80              //
+     81              g_ulRandomSeed = (g_ulRandomSeed * 1664525) + 1013904223+g_ulRandomSeed;
+     82          
+     83              //
+     84              // Return the new random number.
+     85              //
+     86              return((uint32_t )g_ulRandomSeed);
+     87          }
+     88          
+     89          
+     90          
+     91          
+     92           
+     93          
+     94          
+     95          // SD24B interrupt service routine
+     96          #pragma vector=SD24B_VECTOR
+     97          __interrupt void SD24BISR(void)
+     98          {
+     99            	sh_lo_t val;
+    100          
+    101          
+    102          	int32_t CurrentSample, VoltageSample;
+    103          			
+    104          	if ((SD24BIFG & SD24IFG0))
+    105          	{
+    106          		val.by16[1] = (int16_t) SD24BMEMH0;
+    107          		val.by16[0] = (int16_t) SD24BMEML0;
+    108          		
+    109          		//
+    110          		// Load LSB to Random Seed
+    111          		usrand( (uint16_t) val.by16[0]);
+    112          		
+    113          		VoltageSample = val.by32;
+    114          		//
+    115          		// Clear Pending
+    116          		SD24BIFG &= ~SD24IFG0;
+    117          		
+    118          		//
+    119          		// Increase Sampler Counter
+    120          		(DcEmeter.VSample_CNT)++;
+    121          		
+    122          		//
+    123          		// Square and Accumulate
+    124          		sqac_voltage ( &(DcEmeter.V_sq), VoltageSample);
+    125          		
+    126          
+    127          	}
+    128          
+    129          	if ((SD24BIFG & SD24IFG1))
+    130          	{
+    131          		val.by16[1] = (int16_t) SD24BMEMH1;
+    132          		val.by16[0] = (int16_t) SD24BMEML1;
+    133          		
+    134          		CurrentSample = val.by32;
+    135          		SD24BIFG &= ~SD24IFG1;
+    136          		
+    137          		//
+    138          		// Increase Sampler Counter
+    139          		(DcEmeter.ISample_CNT)++;
+    140          		
+    141          		//
+    142          		// Median Filter
+    143          		
+    144          		//
+    145          		// Square and Accumulate
+    146          		sqac_current ( &(DcEmeter.I_sq), CurrentSample);
+    147          		
+    148          		
+    149          	}
+    150          
+    151          	//
+    152          	// Saturation Test
+    153          
+    154          
+    155          	//
+    156          	// Filtering
+    157          
+    158          	
+    159          	
+    160          	//
+    161          	// Logging  
+    162          	if ( (DcEmeter.ISample_CNT) == 1024 && (DcEmeter.VSample_CNT) == 1024)
+    163          	{
+    164          	  	
+    165          	  	DcEmeter.log_V_sq = DcEmeter.V_sq;
+    166          		DcEmeter.log_I_sq = DcEmeter.I_sq;
+    167          	  	
+    168          	  	DcEmeter.SampleDoneFlag = 1;
+    169          		
+    170          		//
+    171          		// Clear
+    172          		DcEmeter.ISample_CNT = 0;
+    173          		DcEmeter.VSample_CNT = 0;
+    174          		DcEmeter.V_sq = 0;
+    175          		DcEmeter.I_sq = 0;
+    176          		
+    177          		// -> Change this trigger to Timer Trigger and perform a IIR Filter feature.
+    178          		// Start ADC 10-bit Conversion.
+    179          		ADC10CTL0 |= ADC10ENC | ADC10SC;          // Sampling and conversion start*/
+    180          		
+    181          	}
+    182          	
+    183          
+    184          	
+    185          
+    186          }
+    187          
+    188          
+    189          
+    190          void Cal_DcEmeter_RMS_Value (void)
+    191          {
+    192          	int64_t tmp;
+    193                  int16_t i;
+    194          	int64_t x;
+    195          	//
+    196          	// Vrms
+    197          	//
+    198          	tmp = div_dc_voltage( &(DcEmeter.log_V_sq), 1024);
+    199          
+    200          	DcEmeter.pureVrms = isqrt64(tmp);
+    201          
+    202          	//
+    203          	// Scaling
+    204          	DcEmeter.VrmsRaw = (uint32_t) ((DcEmeter.pureVrms)>>32);
+    205          	i = (1000*1.146);	// Ref = 1.146V , Display window to mV x1000
+    206          	x = 0;
+    207          	mac64_16_24( &x, i, DcEmeter.VrmsRaw);
+    208          	DcEmeter.DigiVrms = (x*221/2)>>24;	// mV, Resistor Dividor -> 442k/2k = 221, Gain = 2, ADC Resolution 24 		
+    209          
+    210          
+    211          	//
+    212          	// Irms
+    213          	//
+    214          	tmp = div_dc_current( &(DcEmeter.log_I_sq), 1024);
+    215          
+    216          	DcEmeter.pureIrms = isqrt64(tmp);
+    217          
+    218          	//
+    219          	// Scaling
+    220          	DcEmeter.IrmsRaw = (uint32_t) ((DcEmeter.pureIrms)>>32);	// Remove Fractional Part
+    221          	i = (1000*1.146);	// Ref = 1.146V , Display window to V x1000
+    222          	x = 0;
+    223          	mac64_16_24( &x, i, DcEmeter.IrmsRaw);
+    224          	DcEmeter.ShuntVol= (x*10/8)>>24;	// uV, Resistor Dividor -> 442k/2k = 221, Gain = 8, ADC Resolution 24 					
+    225          	DcEmeter.DigiIrms = (x*1000/5*2/8)>>24;	// Display Window to mA, Shunt 5mOhm, Gain = 8, ADC Resolution 24 
+    226                  DcEmeter.DigiIrms = (uint32_t)(DcEmeter.DigiIrms/1.06); //Current Make up/////hardware bug for 1.06
+    227          
+    228          	DcEmeter.DigiavgPower = (DcEmeter.DigiIrms*DcEmeter.DigiVrms)/1000;	// Display to mW
+    229          }
+    230          
+    231          // ADC10 interrupt service routine
+    232          #pragma vector=ADC10_VECTOR
+    233          __interrupt void ADC10_ISR(void)
+    234          {
+    235            	uint16_t sample_Temp;
+    236              //uint8_t *ptr;
+    237              switch (__even_in_range(ADC10IV, 12))
+    238              {
+    239                  case  ADC10IV_NONE: break;                // No interrupt
+    240                  case  ADC10IV_ADC10OVIFG: break;          // conversion result overflow
+    241                  case  ADC10IV_ADC10TOVIFG: break;         // conversion time overflow
+    242                  case  ADC10IV_ADC10HIIFG: break;          // ADC10HI
+    243                  case  ADC10IV_ADC10LOIFG: break;          // ADC10LO
+    244                  case  ADC10IV_ADC10INIFG: break;          // ADC10IN
+    245                  case  ADC10IV_ADC10IFG:                   // ADC10
+    246                      
+    247          		  	//
+    248          		  	// Perform IIR Filter
+    249                      sample_Temp = ADC10MEM0;              // Store ADC10 channel 0 result
+    250          			
+    251          			
+    252                      calTemp(sample_Temp);                 // Calculate Temperature
+    253                     // fill_PV_PowerInfo();                  // fill PowerInfo
+    254          
+    255                      break;
+    256          			
+    257                  default: break;
+    258          		
+    259              }
+    260              
+    261          }
+    262          
+    263          /******** ADC10_A ********/                 // T = (cons_R - ntc_R) / diff_R + cons_T
+    264          
+    265          //#define Ktemp 0xF4                          // 2.5 * 1000 * 100 / 1023 = 244.33
+    266          #define Ktemp 0x142                         // 3.3 * 1000 * 100 / 1023 = 322.58
+    267          #define r 13000                             // 13k 
+    268          #define ref_V 330                           // 3.3 * 100
+    269          #define cons_T 25                           // R25 temperature
+    270          #define cons_R 47000                        // R25
+    271          //#define diff 705                          // 1 degree is 705 ohm
+    272          void calTemp(uint16_t sample_Temp)
+    273          {
+    274            	int32_t adcresult_Temp;
+    275                  int32_t ntc_R;
+    276          	
+    277              MPY = sample_Temp;                       // signed 16bits
+    278              OP2 = Ktemp;
+    279              
+    280              res1 = RESHI;
+    281              adcresult_Temp = (res1 << 16 | RESLO)/1000;
+    282              ntc_R = (adcresult_Temp*r)/(ref_V-adcresult_Temp);
+    283              //DcEmeter.Diode_Temp = (cons_R - ntc_R) / diff + cons_T;
+    284              DcEmeter.Diode_Temp = Temp_table(ntc_R);
+    285              //DcEmeter.Diode_Temp = adcresult_Temp;
+    286              //DcEmeter.Diode_Temp = ntc_R;
+    287              
+    288          }
+    289          
+    290          #define initial_temp -40
+    291          int32_t Temp_table(int32_t R)
+    292          {
+    293            int32_t temp_R[35] = {348500, // -40c
+    294                                  249962, // -35c
+    295                                  181385, // -30c
+    296                                  133090, // -25c
+    297                                  98691, // -20c
+    298                                  73923, // -15c
+    299                                  55905, // -10c
+    300                                  42668, // -5c
+    301                                  32851, // 0c
+    302                                  25504, // 5c
+    303                                  19959, // 10c
+    304                                  15739, // 15c
+    305                                  12502, // 20c
+    306                                  10000, // 25c
+    307                                  8052, // 30c
+    308                                  6525, // 35c
+    309                                  5321, // 40c
+    310                                  4364, // 45c
+    311                                  3599, // 50c
+    312                                  2984, // 55c
+    313                                  2488, // 60c
+    314                                  2084, // 65c
+    315                                  1754, // 70c
+    316                                  1483, // 75c
+    317                                  1260, // 80c
+    318                                  1074, // 85c
+    319                                  920, // 90c
+    320                                  791, // 95c
+    321                                  683, // 100c
+    322                                  591, // 105c
+    323                                  514, // 110c
+    324                                  448, // 115c
+    325                                  392, // 120c
+    326                                  344, // 125c
+    327                                  303 // 130c
+    328                                  };
+    329            int32_t diff_R = 0;
+    330            int32_t Temp = 0;
+    331            for(int i=0;i<35;i++){
+    332                if(temp_R[i]<R && i>0){
+    333                    diff_R = (temp_R[i-1] - temp_R[i]) / 5;
+    334                    Temp = (i*5 + initial_temp) - ((R - temp_R[i]) / diff_R);
+    335                    if(Temp > 130)
+    336                      Temp = 130;
+    337                    else if(Temp < -40)
+    338                      Temp = -40;
+    339                    return Temp;
+    340                    //return R;
+    341                }
+    342            }
+    343            return Temp;
+    344          }
+    345          
+    346          
+    347          
+    348          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      12  ADC10_ISR
+            12 -> calTemp
+      28  Cal_DcEmeter_RMS_Value
+            28 -> _Cast32fto32u
+            28 -> _Cast32uto32f
+            28 -> _Div32f
+            28 -> _Div64s
+            28 -> isqrt64
+            28 -> mac64_16_24
+       4  Get_DcEmeter
+      16  SD24BISR
+            16 -> sqac64_24
+            16 -> usrand
+     156  Temp_table
+       8  calTemp
+             8 -> Temp_table
+       4  mac64_16_24
+       4  sqac64_24
+       6  urand
+       4  usrand
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+     140  ?<Constant {348500L, 249962L, 181385L, 133090L
+       4  ?<Initializer for g_ulRandomSeed>
+       2  ??ADC10_ISR??INTVEC 114
+       2  ??SD24BISR??INTVEC 112
+      34  ADC10_ISR
+     586  Cal_DcEmeter_RMS_Value
+      88  DcEmeter
+       6  Get_DcEmeter
+     202  SD24BISR
+     208  Temp_table
+       2  _A_ADC10CTL0_L
+       2  _A_ADC10IV_L
+       2  _A_ADC10MEM0_L
+       4  _A_MPYS8
+       2  _A_MPY_L
+       4  _A_OP2_8
+       2  _A_OP2_L
+       8  _A_RES8
+       2  _A_RESHI_L
+       2  _A_RESLO_L
+       2  _A_SD24BIFG_L
+       2  _A_SD24BMEMH0_L
+       2  _A_SD24BMEMH1_L
+       2  _A_SD24BMEML0_L
+       2  _A_SD24BMEML1_L
+      96  calTemp
+       4  g_ulRandomSeed
+      34  mac64_16_24
+      38  sqac64_24
+      66  urand
+      12  usrand
+
+ 
+ 1 046 bytes in segment CODE
+    40 bytes in segment DATA16_AN
+   140 bytes in segment DATA16_C
+     4 bytes in segment DATA16_I
+     4 bytes in segment DATA16_ID
+    88 bytes in segment DATA16_Z
+     4 bytes in segment INTVEC
+   236 bytes in segment ISR_CODE
+ 
+ 1 282 bytes of CODE  memory
+   144 bytes of CONST memory (+  4 bytes shared)
+    92 bytes of DATA  memory (+ 40 bytes shared)
+
+Errors: none
+Warnings: none

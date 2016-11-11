@@ -1,0 +1,122 @@
+[Stack]
+FillEnabled=0
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnLogOnly=1
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[State Storage]
+Control Register=0
+[Sequencer]
+Control Register=0
+NextState0=0
+NextState1=0
+[Action Register]
+Break=0
+State Storage=0
+[DebugChecksum]
+Checksum=74131741
+[CallStack]
+ShowArgs=0
+[Disassembly]
+MixedMode=1
+[InterruptLog]
+LogEnabled=0
+SumEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+ShowTimeSum=1
+SumSortOrder=0
+[DataLog]
+LogEnabled=0
+SumEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+ShowTimeSum=1
+[Breakpoints2]
+Bp0=_ 1 "STD_CODE2" "{$PROJ_DIR$\source\App\Interrupt.c}.42.14" 0 0 1 "" 0 ""
+Count=1
+[Interrupts]
+Enabled=1
+[MemoryMap]
+Enabled=0
+Base=0
+UseAuto=0
+TypeViolation=1
+UnspecRange=1
+ActionState=1
+[Trace1]
+Enabled=0
+ShowSource=1
+[struct_types]
+Fmt0=Emeter-DigiIrms	3	0
+Fmt1=Emeter-DigiVrms	3	0
+Fmt2=Emeter-DigiavgPower	3	0
+Fmt3=Emeter-ShuntVol	3	0
+Fmt4=PV_ValueFrame-Current	3	0
+Fmt5=PV_ValueFrame-DiodeTemp	3	0
+Fmt6=PV_ValueFrame-Power	3	0
+Fmt7=PV_ValueFrame-Voltage	3	0
+[array_types]
+Fmt0=unsigned long[2]	4	0
+[watch_formats]
+Fmt0={W}0:RTCCounter	3	0
+Fmt1={W}0:RX_Tank_Write_Index	3	0
+Fmt2={W}0:RandomDelay	3	0
+Fmt3={W}0:ntc_R	3	0
+Fmt4={W}0:x	3	0
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[CallStackLog]
+Enabled=0
+[DriverProfiling]
+Enabled=0
+Mode=0
+Graph=0
+Symbiont=0
+Exclusions=
+[Breakpoints]
+Bp0=_ "STD_CODE" "{$PROJ_DIR$}.28.6" 0 0 0 0 "" 0 ""
+Bp1=_ "STD_CODE" "{$PROJ_DIR$}.229.3" 0 0 0 0 "" 0 ""
+Bp2=_ "STD_CODE" "{$PROJ_DIR$\msp430Lib\hal_UCS.c}.280.3" 1 0 0 0 "" 0 ""
+Count=3
+[FET]
+Clock mode=14
+Extended Clock mode=-1
+Secure Password=
+Extended Clock Control Enable=1
+Advanced Extended Clock Control=0
+Emulation mode=0
+Free running=0
+Shutting Down=3
+[Memory Dump]
+Start address=
+Lenghth=
+Address info=0
+Format=0
+Dump registers=0
+PC=0
+SP=0
+SR=0
+all registers=0
+File name=
+[Aliases]
+A0=_ "C:\Users\Hao\Desktop\MSP430F6720\source\Metrology\cal_VRMS.c" "D:\PV Project\WorkSpace\Software\Junction Box\MSP430F6720\source\Metrology\cal_VRMS.c"
+A1=_ "C:\Users\Hao\Desktop\MSP430F6720\source\Network\Bus_Raw_Protocol.c" "D:\PV Project\WorkSpace\Software\Junction Box\MSP430F6720\source\Network\Bus_Raw_Protocol.c"
+A2=_ "C:\Users\LIN\Desktop\MSP430F6720  WH 2014_11_07\source\App\Interrupt.c" ""
+A3=_ "C:\Users\LIN\Desktop\MSP430F6720  WH 2014_12_04\source\App\communication_RS485.c" ""
+A4=_ "C:\Users\LIN\Desktop\MSP430F6720  WH 2015_02_11(NEW TEMP NO WARNING)\source\App\communication_RS485.c" ""
+A5=_ "D:\PV Project\WorkSpace\Software\Junction Box\Code Library\Emeter 6736 Source Pure\emeter-toolkit\src\iar\dc_filter24.s43" ""
+A6=_ "D:\PV Project\WorkSpace\Software\Junction Box\Code Library\Emeter 6736 Source Pure\emeter-toolkit\src\iar\isqrt32.s43" ""
+A7=_ "D:\PV Project\WorkSpace\Software\Junction Box\MSP430F6720  WT 2013_01_02\source\App\main.c" "D:\PV Project\WorkSpace\Software\Junction Box\MSP430F6720  WT 2013_01_03\source\App\main.c"
+A8=_ "D:\PV Project\WorkSpace\Software\Junction Box\MSP430F6720\source\App\main.c" ""
+Count=9
+SuppressDialog=1

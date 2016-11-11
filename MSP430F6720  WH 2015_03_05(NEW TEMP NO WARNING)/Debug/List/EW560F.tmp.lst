@@ -1,0 +1,57 @@
+###############################################################################
+#                                                                             #
+#                                                       05/Mar/2015  15:34:11 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430X                                                    #
+#    __data_model  =  small                                                   #
+#    Source file   =  \\140.118.7.213\產學合作區\貿聯產學區\JunctionBox_MSP43 #
+#                     0\Workspace\MSP430F6720  WH 2015_02_26(NEW TEMP NO      #
+#                     WARNING)\EW560F.tmp.c                                   #
+#    Command line  =  "\\140.118.7.213\產學合作區\貿聯產學區\JunctionBox_MSP4 #
+#                     30\Workspace\MSP430F6720  WH 2015_02_26(NEW TEMP NO     #
+#                     WARNING)\EW560F.tmp.c" -lcN                             #
+#                     "\\140.118.7.213\產學合作區\貿聯產學區\JunctionBox_MSP4 #
+#                     30\Workspace\MSP430F6720  WH 2015_02_26(NEW TEMP NO     #
+#                     WARNING)\Debug\List\" -o "\\140.118.7.213\產學合作區\貿 #
+#                     聯產學區\JunctionBox_MSP430\Workspace\MSP430F6720  WH   #
+#                     2015_02_26(NEW TEMP NO WARNING)\Debug\Obj\" --no_cse    #
+#                     --no_unroll --no_inline --no_code_motion --no_tbaa      #
+#                     --debug -D__MSP430F6720__ -e --double=32 --dlib_config  #
+#                     "C:\Program Files (x86)\IAR Systems\Embedded Workbench  #
+#                     6.4 Evaluation\430\LIB\DLIB\dl430xsfn.h" -I             #
+#                     "\\140.118.7.213\產學合作區\貿聯產學區\JunctionBox_MSP4 #
+#                     30\Workspace\MSP430F6720  WH 2015_02_26(NEW TEMP NO     #
+#                     WARNING)/source/inc\" -I "\\140.118.7.213\產學合作區\貿 #
+#                     聯產學區\JunctionBox_MSP430\Workspace\MSP430F6720  WH   #
+#                     2015_02_26(NEW TEMP NO WARNING)/.\" --core=430X         #
+#                     --data_model=small -Ol --multiplier=32                  #
+#                     --multiplier_location=4C0 --hw_workaround=CPU40         #
+#                     --predef_macros "\\140.118.7.213\產學合作區\貿聯產學區\ #
+#                     JunctionBox_MSP430\Workspace\MSP430F6720  WH            #
+#                     2015_02_26(NEW TEMP NO WARNING)\EW560E.tmp"             #
+#    List file     =  \\140.118.7.213\產學合作區\貿聯產學區\JunctionBox_MSP43 #
+#                     0\Workspace\MSP430F6720  WH 2015_02_26(NEW TEMP NO      #
+#                     WARNING)\Debug\List\EW560F.tmp.lst                      #
+#    Object file   =  \\140.118.7.213\產學合作區\貿聯產學區\JunctionBox_MSP43 #
+#                     0\Workspace\MSP430F6720  WH 2015_02_26(NEW TEMP NO      #
+#                     WARNING)\Debug\Obj\EW560F.tmp.r43                       #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+
+
+ 
+
+ 
+
+
+Errors: none
+Warnings: none

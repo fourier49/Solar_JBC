@@ -1,0 +1,348 @@
+###############################################################################
+#                                                                             #
+#                                                       11/May/2015  15:01:33 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430X                                                    #
+#    __data_model  =  small                                                   #
+#    Source file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\ProtocolTime #
+#                     r.c                                                     #
+#    Command line  =  "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\ProtocolTime #
+#                     r.c" -lcN "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720 #
+#                       WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH    #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\" -o         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\" --no_cse    #
+#                     --no_unroll --no_inline --no_code_motion --no_tbaa      #
+#                     --debug -D__MSP430F6720__ -e --double=32 --dlib_config  #
+#                     "C:\Program Files (x86)\IAR Systems\Embedded Workbench  #
+#                     6.4 Evaluation\430\LIB\DLIB\dl430xsfn.h" -I             #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/source/inc\" -I         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/.\" --core=430X         #
+#                     --data_model=small -Ol --multiplier=32                  #
+#                     --multiplier_location=4C0 --hw_workaround=CPU40         #
+#    List file     =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\ProtocolTime #
+#                     r.lst                                                   #
+#    Object file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\ProtocolTimer #
+#                     .r43                                                    #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\source\App\ProtocolTimer.c
+      1          #include "configuration.h"
+      2          
+      3          #include "source/App/ProtocolTimer.h"
+      4          
+      5          #pragma data_alignment=2
+      6          static volatile uint8_t BRD_Timer_Lock = 0;
+      7          #pragma data_alignment=2
+      8          static volatile uint16_t RTCCounter = 0;
+      9          #pragma data_alignment=2
+     10          static volatile uint8_t Clear_Regist_Flag = 0;
+     11          
+     12          
+     13          
+     14          //
+     15          // RTC
+     16          unsigned char data1[16]="00:00:00        ";//****
+     17          //*****************************************************************************
+     18          //	RTC interrupt service routine
+     19          // 	- 
+     20          //*****************************************************************************	
+     21          /*#pragma vector=RTC_VECTOR
+     22          __interrupt void RTC_ISR(void)
+     23          {
+     24          
+     25            while(1);
+     26            
+     27             counter++;
+     28             
+     29             if(counter==60)
+     30             {
+     31              min++;
+     32              counter=0;
+     33              if(min==60)
+     34              {
+     35               hour++;
+     36               min=0;
+     37               if(hour==24)
+     38               {
+     39                hour=0;
+     40                data2[9]= data2[9]+1;
+     41               }
+     42              }
+     43             }
+     44             
+     45             
+     46             p=counter%10;
+     47             data1[7]=p+0x30;
+     48             p=counter/10;
+     49             data1[6]=p+0x30;
+     50             
+     51             p=min%10;
+     52             data1[4]=p+0x30;
+     53             p=min/10;
+     54             data1[3]=p+0x30;
+     55             
+     56             p=hour%10;
+     57             data1[1]=p+0x30;
+     58             p=hour/10;
+     59             data1[0]=p+0x30;
+     60             
+     61             
+     62             
+     63             data1[2]=':';
+     64             data1[5]=':';
+     65             
+     66             lcdwda(0,1,data1);
+     67             lcdwda(0,0,data2);
+     68             RTCCTL01 &= ~RTCTEVIFG;
+     69             RTCPS1CTL &= ~RT1PSIFG;
+     70            
+     71            
+     72          }*/
+     73          
+     74          //static volatile uint8_t RTCCounter = 0;
+     75          //static volatile uint8_t Clear_Regist_Flag = 0;
+     76          #pragma vector=TIMER3_A0_VECTOR
+     77          __interrupt void TIMER3_A0_ISR(void)
+     78          {
+     79           	//
+     80            	// Stop The Timer 
+     81            	//TA3CTL = TASSEL_2|MC_0|TACLR;	
+     82          	
+     83          	//
+     84          	// Clear Interrupt Pending
+     85            	RTCCounter++;
+     86          	
+     87          	
+     88          	if ( RTCCounter>= RESETTIMER)
+     89          	{
+     90          		Clear_Regist_Flag = 1;
+     91          		RTCCounter = 0;
+     92          	}
+     93          	  
+     94          }
+     95          
+     96          void Reset_ClearRegistFlag_Counter (void)
+     97          {
+     98          	RTCCounter = 0;
+     99          	Clear_Regist_Flag = 0;
+    100          }
+    101          
+    102          uint8_t GET_ClearRegistFlag (void)
+    103          {
+    104            	if ( Clear_Regist_Flag == 1)
+    105          	{
+    106          	  	RTCCounter = 0;
+    107          		Clear_Regist_Flag = 0;
+    108          		return 1;
+    109          	}
+    110          	//
+    111          	// Else
+    112          	return 0;
+    113          }
+    114          
+    115          //*****************************************************************************
+    116          //	Timer2 A0 interrupt service routine
+    117          // 	-
+    118          //*****************************************************************************		
+    119          #pragma vector=TIMER2_A0_VECTOR
+    120          __interrupt void TIMER2_A0_ISR(void)
+    121          {
+    122           	//
+    123            	// Stop The Timer 
+    124            	TA2CTL = TASSEL_2|MC_0|TACLR;	
+    125          	
+    126          	//
+    127          	// Clear Interrupt Pending
+    128          	
+    129          	//
+    130          	// Release Lock
+    131          	BRD_Timer_Lock = 1;
+    132          
+    133          }
+    134          
+    135          //*****************************************************************************
+    136          //	Get the state of lock of Bus Raw Protocol 
+    137          //	- 1 mSecond resolution.
+    138          //*****************************************************************************
+    139          uint8_t Get_BRD_TimerLock_State (void)
+    140          {
+    141          	if (BRD_Timer_Lock == 1)
+    142          	{
+    143          		BRD_Timer_Lock = 0;	// Reset the Lock.
+    144          		return 1;	// Lock is Release.
+    145          	}
+    146          	else
+    147          		return 0;	// Timer is Locked
+    148          }
+    149          //*****************************************************************************
+    150          //	Start Bus Raw Data Protocol Timer
+    151          //	- 1 mSecond resolution.
+    152          //  - 32.768kHz Clock Source.
+    153          //*****************************************************************************
+    154          void Start_BRD_Timer (uint16_t mSec)
+    155          {
+    156          	
+    157          	//
+    158          	// Stop Timer
+    159          	TA2CTL = TASSEL_1|MC_0; // Stop Timer
+    160          				
+    161          	//
+    162          	// Load Value
+    163          	TA2CCR0 = mSec*BRD_Timer_1mSec;
+    164          	
+    165          	//
+    166          	// Start Timer
+    167            	TA2CTL = TASSEL_1|	// Clk Source ACK
+    168          			 MC_1|		// Start
+    169          			 TACLR;		// Clear
+    170          			 
+    171          	//
+    172          	// Lock 
+    173          	BRD_Timer_Lock = 0;
+    174          }
+    175          
+    176          //*****************************************************************************
+    177          //	Stop Bus Raw Data Protocol Timer
+    178          //*****************************************************************************
+    179          void Stop_BRD_Timer (void)
+    180          {
+    181          	TA2CTL = TASSEL_2|MC_0|TACLR;		
+    182          }
+    183          
+    184          //*****************************************************************************
+    185          //	Initialize BRD Protocol Timer
+    186          //	- RTC Timer
+    187          //  - 1 mins timeout
+    188          //*****************************************************************************
+    189          void Init_Timer_For_BRDProtocol (void)
+    190          {
+    191            	//
+    192            	// Configure Timer
+    193              TA2CTL = TASSEL_1|	// Use 32.768kHz as Clock Source
+    194          			 MC_0|		// Stop Timer
+    195          			 TACLR;	
+    196            
+    197          	//
+    198          	// Enable Compared Interrupt 
+    199              TA2CCTL0 = CCIE;                        // Compared interrupt enabled
+    200              TA2CCR0 = BRD_Timer_1mSec;
+    201          }
+    202          
+    203          
+    204          
+    205          //*****************************************************************************
+    206          //	Initialize RTC Timer
+    207          //	- RTC Timer
+    208          //*****************************************************************************
+    209          void Init_RTC (void)
+    210          {
+    211            	//
+    212            	// Unlock RTC Module
+    213              /*RTCCTL0_H = RTCKEY;
+    214          	
+    215          	
+    216              RTCCTL0_L = RTCTEVIE_L;	 // Enable RTC event interrupt
+    217          
+    218          	
+    219          	RTCCTL13_H = RTCCALF1_H|RTCCALF0_H; // Frequency of RTC Calibration 1 Hz
+    220          	RTCCTL13_L = RTCMODE_L|				// Calendar Mode
+    221          	  			 RTCTEV__MIN;			// Time Event- Mins Changed.
+    222          	*/
+    223          	
+    224             	//RTCPS0CTL = RT0PSDIV_7;                   // Set RTPS0 to /256
+    225            
+    226              	//
+    227            	// Configure Timer
+    228              TA3CTL = TASSEL_1|	// Use 32.768kHz as Clock Source
+    229          			 MC_1|		// Stop Timer
+    230          			 TACLR;	
+    231            
+    232          	//
+    233          	// Enable Compared Interrupt 
+    234              TA3CCTL0 = CCIE;                        // Compared interrupt enabled
+    235              TA3CCR0 = ACLK_Rate;
+    236            	
+    237          }
+    238          
+    239          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+       4  GET_ClearRegistFlag
+       4  Get_BRD_TimerLock_State
+       4  Init_RTC
+       4  Init_Timer_For_BRDProtocol
+       4  Reset_ClearRegistFlag_Counter
+       4  Start_BRD_Timer
+       4  Stop_BRD_Timer
+       4  TIMER2_A0_ISR
+       4  TIMER3_A0_ISR
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      16  ?<Initializer for data1>
+       2  ??TIMER2_A0_ISR??INTVEC 92
+       2  ??TIMER3_A0_ISR??INTVEC 86
+       1  BRD_Timer_Lock
+       1  Clear_Regist_Flag
+      22  GET_ClearRegistFlag
+      18  Get_BRD_TimerLock_State
+      20  Init_RTC
+      20  Init_Timer_For_BRDProtocol
+       2  RTCCounter
+      10  Reset_ClearRegistFlag_Counter
+      44  Start_BRD_Timer
+       8  Stop_BRD_Timer
+       2  TA2CCR0
+       2  TA2CCTL0
+       2  TA2CTL
+       2  TA3CCR0
+       2  TA3CCTL0
+       2  TA3CTL
+      12  TIMER2_A0_ISR
+      22  TIMER3_A0_ISR
+      16  data1
+
+ 
+ 142 bytes in segment CODE
+  12 bytes in segment DATA16_AN
+  16 bytes in segment DATA16_I
+  16 bytes in segment DATA16_ID
+   4 bytes in segment DATA16_Z
+   4 bytes in segment INTVEC
+  34 bytes in segment ISR_CODE
+ 
+ 176 bytes of CODE  memory
+  16 bytes of CONST memory (+  4 bytes shared)
+  20 bytes of DATA  memory (+ 12 bytes shared)
+
+Errors: none
+Warnings: none

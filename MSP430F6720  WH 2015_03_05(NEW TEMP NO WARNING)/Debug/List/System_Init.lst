@@ -1,0 +1,458 @@
+###############################################################################
+#                                                                             #
+#                                                       11/May/2015  15:01:32 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430X                                                    #
+#    __data_model  =  small                                                   #
+#    Source file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\System_Init. #
+#                     c                                                       #
+#    Command line  =  "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\source\App\System_Init. #
+#                     c" -lcN "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720   #
+#                     WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH      #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\" -o         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\" --no_cse    #
+#                     --no_unroll --no_inline --no_code_motion --no_tbaa      #
+#                     --debug -D__MSP430F6720__ -e --double=32 --dlib_config  #
+#                     "C:\Program Files (x86)\IAR Systems\Embedded Workbench  #
+#                     6.4 Evaluation\430\LIB\DLIB\dl430xsfn.h" -I             #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/source/inc\" -I         #
+#                     "D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH       #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)/.\" --core=430X         #
+#                     --data_model=small -Ol --multiplier=32                  #
+#                     --multiplier_location=4C0 --hw_workaround=CPU40         #
+#    List file     =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\List\System_Init. #
+#                     lst                                                     #
+#    Object file   =  D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH        #
+#                     2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH         #
+#                     2015_03_05(NEW TEMP NO WARNING)\Debug\Obj\System_Init.r #
+#                     43                                                      #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+D:\BLINK\SOLAR.git\2015SJB_ForM4\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\MSP430F6720  WH 2015_03_05(NEW TEMP NO WARNING)\source\App\System_Init.c
+      1          #include "configuration.h"
+      2          
+      3          #include <msp430f6720.h>
+      4          
+      5          #include "msp430Lib/hal_UCS.h"
+      6          #include "msp430Lib/hal_pmm.h"
+      7          
+      8          #include "source/App/ProtocolTimer.h"
+      9          
+     10          
+     11          //*****************************************************************************
+     12          //	System Configuration
+     13          //	
+     14          //*****************************************************************************
+     15          #define MCLK_DEF 16	// 16Mhz
+     16          
+     17          //*****************************************************************************
+     18          //	System Debug
+     19          //	
+     20          //*****************************************************************************
+     21          #define Debug_UCA 0
+     22          
+     23          
+     24          //*****************************************************************************
+     25          //	Analog front-end Configuration
+     26          //
+     27          //*****************************************************************************
+     28          #define CURRENT_Shunt_GAIN	SD24GAIN_8
+     29          #define VOLTAGE_GAIN		SD24GAIN_2
+     30          
+     31          
+     32          //*****************************************************************************
+     33          //	Ememter Parameter
+     34          //
+     35          //*****************************************************************************
+     36          #define SAMPLE_RATE                         4096
+     37          #define SAMPLES_PER_10_SECONDS              40960ul
+     38          
+     39          //*****************************************************************************
+     40          //	Analog front-end initialization routine.
+     41          //	- SD24 B.
+     42          //	Description:
+     43          //		Configures the 24-bit sigma-delta ADC module as analog front-end for
+     44          // 	a tamper-resistant meter using a shunt Micro-Resistor as current sensor.
+     45          //*****************************************************************************
+     46          //#define SD24_with_DMA
+     47          static void Init_SD24_Analog_Front_End(void)
+     48          {
+     49          
+     50              /*
+     51               * The general configuration of the analog front-end,
+     52               * that applies to all channels: clock selection (SMCLK) and divider
+     53               * settings (depending on SMCLK frequency) and reference voltage
+     54               * selections.
+     55               */
+     56              //REFCTL0 = REFMSTR + REFVSEL_1 + REFON;	// Enabale Reference = 2.0V
+     57          
+     58          	//
+     59          	// !!Purpose is not sure!!
+     60              SD24BCTL1 &= ~SD24GRP0SC; 
+     61          
+     62          	//
+     63          	// SD24 Basic Setting.
+     64          #if MCLK_DEF == 16
+     65              SD24BCTL0 = SD24SSEL__SMCLK  			// Clock is SMCLK
+     66                      | SD24PDIV_4    				// Divide by 16 => ADC clock: 1.048576MHz 
+     67                      | SD24DIV0
+     68                      | SD24REFS;     				// Use internal reference
+     69          #endif
+     70          #if MCLK_DEF == 8
+     71              SD24BCTL0 = SD24SSEL__SMCLK  			// Clock is SMCLK
+     72                      | SD24PDIV_3   					// Divide by 8 => ADC clock: 1.048576MHz
+     73                      | SD24REFS;    					// Use internal reference 
+     74          #endif
+     75          	//
+     76          	// Configure Voltage Channel (CH0) Analog Front-End
+     77              SD24BINCTL0 = VOLTAGE_GAIN; 		// Set gain for channel 0 (V) 
+     78          	
+     79              SD24BCCTL0 = SD24DF_1| 					// Data Format: 2's complement
+     80          	  			//SD24ALGN|					// Data Alignment: Left-aligned MSB of Filter output.
+     81          				SD24SCS_4;                	// Set oversampling ratio to 256 (default)
+     82              SD24BOSR0 = 256 - 1;      				// Set oversampling ratio to 256 (default) 
+     83              //SD24BPRE0 = 0;							// Clear Digital filter preload value.
+     84          
+     85          	//
+     86          	// Configure Current Channel (CH1) Analog Front-End
+     87              SD24BINCTL1 = CURRENT_Shunt_GAIN;             // Set gain for channel 1 (I) 
+     88          	
+     89              SD24BCCTL1 = SD24DF_1|					// Data Format: 2's complement
+     90          	 			//SD24ALGN|					// Data Alignment: Left-aligned MSB of Filter output.
+     91          				SD24SCS_4;             		// Set oversampling ratio to 256 (default) 
+     92              SD24BOSR1 = 256 -1;                     // Set oversampling ratio to 256 (default) 
+     93              
+     94          	//
+     95          	// Group Setting
+     96              SD24BCTL1 |= SD24GRP0SC;                // Group 0 Start Conversion.
+     97          
+     98          	SD24BIE = SD24IE1;                      // Enable channel 1 interrupt
+     99          	__delay_cycles(0x3600);                 // Delay for init	
+    100          	//
+    101          	// SD24B Data Bypass Through DMA
+    102          #ifdef SD24_with_DMA
+    103          	extern int16_t dma_adc_buffer[6];
+    104          
+    105          	SD24BCTL1_H = SD24DMA1_H;
+    106          
+    107          	DMACTL0 = DMA0TSEL__SD24IFG;
+    108          	DMA0SA = (unsigned short) &SD24BMEML0;
+    109          	DMA0DA = (unsigned short) dma_adc_buffer;
+    110          	DMA0SZ = 6;
+    111          	DMA0CTL = DMASWDW + DMASRCINCR_3 + DMADSTINCR_3 + DMADT_5 + DMAEN + DMAIE; // word, inc dest, repeated block, Enable, Enable IE
+    112          #else
+    113              //SET_SD16IE_VOLTAGE;
+    114          #endif
+    115              /*SD16PRE_VOLTAGE = DEFAULT_V_PRESCALE_FACTOR;
+    116              #if defined(SD16CONF1_FUDGE)
+    117              SD16CONF1 = SD16CONF1_FUDGE;
+    118              #endif
+    119          
+    120              #if !defined(ESP_SUPPORT)  &&  defined(SINGLE_PHASE)
+    121              chan1.metrology.current.in_phase_correction[0].sd16_preloaded_offset = 0;
+    122                  #if defined(NEUTRAL_MONITOR_SUPPORT)
+    123              chan1.metrology.neutral.in_phase_correction[0].sd16_preloaded_offset = 0;
+    124                  #endif
+    125              #endif*/
+    126              //
+    127              // \note
+    128              // Please note, the oversampling ratio should be the same
+    129              // for all channels. Default is 256.
+    130              //
+    131          }
+    132          
+    133          void Init_SD24_ADC (void)
+    134          {
+    135          
+    136          	SD24BCTL0 = SD24REFS| 								// Select Internal Reference
+    137          	  			SD24SSEL_1|								// Select SMCK as Clcok Source
+    138          				SD24PDIV2;								// Divide 16 as fm 
+    139          											
+    140          	SD24BCCTL0 = SD24SNGL | SD24SCS_4;                 // Left-aligned, group 0
+    141          	SD24BCCTL1 = SD24SNGL | SD24SCS_4;                 // Left-aligned, group 0
+    142          	
+    143          	SD24BINCTL1 = SD24GAIN_2;               // ch0 Gain = ;
+    144          	
+    145          	
+    146          	SD24BIE = SD24IE1;                      // Enable channel 1 interrupt
+    147          	__delay_cycles(0x3600);                 // Delay for init
+    148          	//SD24BCTL1 |= SD24GRP0SC;                // Set bit to start conversion
+    149          	
+    150          }
+    151          //*****************************************************************************
+    152          //	Initialize Debug UART
+    153          //	
+    154          //*****************************************************************************
+    155          void Init_Debug_UART ()
+    156          {
+    157          	
+    158          	/********eUART1 Init********/
+    159          	P1SEL |= BIT4 | BIT5;                   // Set P1.4, P1.5 to non-IO
+    160          	P1DIR |= BIT4 | BIT5;                   // Enable UCA0RXD, UCA0TXD
+    161          	
+    162          	UCA1CTLW0 |= UCSWRST;                   // **Put state machine in reset**
+    163          	UCA1CTLW0 |= UCSSEL_2;                  // SMCLK
+    164          	UCA1BRW_L = 8;                          // 1MHz 115200 (see User's Guide) 1M / 115200 = 8.68
+    165          	UCA1BRW_H = 0;                          // 1MHz 115200
+    166          	UCA1MCTLW = (11<<4) | UCBRF_11 | UCOS16;          // Modln UCBRSx=0, UCBRFx=0x13,
+    167          	//UCA1MCTLW = 0xB700;                     // Modulation UCBRSx=0x53, UCBRFx=0
+    168          	UCA1CTLW0 &= ~UCSWRST;                  // **Initialize USCI state machine**
+    169          	UCA1IE |= UCRXIE;                       // Enable USCI_A0 RX interrupt
+    170          	
+    171          
+    172          }
+    173          
+    174          
+    175          //*****************************************************************************
+    176          //	Initialize RS485 DE/RE Control Timer
+    177          //	-TX Off Time is measured from Logical Analyzer.
+    178          //*****************************************************************************
+    179          #define Rs485_Tx_OffTime 	90			// uSec 90uSec @115200 (10 / 115200 = 86.8us = 90uSec)
+    180          #define txEmptyFactor 		2			// Before Transmission completed, there are 2 byte have to be send out.
+    181          #define TX_OFFTIMER_LOAD 	(Rs485_Tx_OffTime*MCLK_DEF*txEmptyFactor)	// The value load to timer.
+    182          void Init_Timer_For_RS485 (void)
+    183          {
+    184              // Setup TA1
+    185              TA1CCTL0 = CCIE;                        // CCR0 interrupt enabled
+    186              TA1CCR0 = TX_OFFTIMER_LOAD;
+    187          }
+    188          
+    189          //*****************************************************************************
+    190          //	Initialize RS485 UART
+    191          //	
+    192          //*****************************************************************************
+    193          void Init_RS485_UART (void)
+    194          {
+    195            	//
+    196            	// Setup Pins 
+    197          	P2SEL |= BIT2 | BIT3;                   // Set P2.2, P2.3 for RS485  eUSCI_A2 = RXD/TXD
+    198          	P2DIR |= BIT2 | BIT3;                   // Enable UCA2RXD, UCA2TXD
+    199          	P1DIR |= BIT7;                          // Enable RS485 DE
+    200          	P2DIR |= BIT0;                          // Enable RS485 /RE
+    201          	
+    202          	//
+    203          	// Set to /RE
+    204          	P1OUT &= ~BIT7;				
+    205          	P2OUT &= ~BIT0;
+    206          	//
+    207          	// 
+    208          	UCA2CTLW0 |= UCSWRST;                   // **Put state machine in reset**
+    209          	UCA2CTLW0 |= UCSSEL_2;                  // SMCLK
+    210          	UCA2BRW_L = 8;                          // 1MHz 115200 (see User's Guide) 1M / 115200 = 8.68
+    211          	UCA2BRW_H = 0;                          // 1MHz 115200
+    212          	UCA2MCTLW = (11<<4) | UCBRF_11 | UCOS16;          // Modln UCBRSx=0, UCBRFx=0x13,
+    213          	//UCA2MCTLW = 0xB700;                     // Modln UCBRSx=0xB7, UCBRFx=0, 0.68 see User's Guide P992
+    214          											// over sampling
+    215          	UCA2CTLW0 &= ~UCSWRST;                  // **Initialize USCI state machine**
+    216          	UCA2IE = UCRXIE;                       // Enable USCI_A0 RX interrupt
+    217          	
+    218          	//
+    219          	// Enable Timer for DE/RE Control
+    220          	Init_Timer_For_RS485 ();
+    221          
+    222          }
+    223          
+    224          //*****************************************************************************
+    225          //	Initial System Clock
+    226          //	
+    227          //*****************************************************************************
+    228          void Init_System_Clock (void)
+    229          {
+    230          	// 
+    231              // Stop WatchDog 
+    232              WDTCTL = (WDTCTL & 0xFF) | WDTPW | WDTHOLD; // WDTPW means WDT Password.
+    233            
+    234          	
+    235          	//
+    236          	// Clock Destination Assignment
+    237              UCSCTL4 |= SELA__REFOCLK;                    	// Set ACLK = 32.768kHz
+    238              UCSCTL4 |= SELS__DCOCLK;               			// Set SMCLK = DCOCLCK
+    239          	
+    240              UCSCTL3 |= SELREF_2;                   			// Set DCO FLL reference = 
+    241          	
+    242              UCSCTL6 |= XCAP_3;                     			// Internal load cap
+    243          	//LFXT_Start(XT1DRIVE_1);		
+    244          
+    245          	
+    246          #if MCLK_DEF > 8
+    247              SetVCore(3);      // Set VCore to High level 
+    248          #endif			
+    249          	
+    250              //Init_FLL_Settle(MCLK_DEF*8388608/8/1000, MCLK_DEF*32768*32/32768);	
+    251          	Init_FLL_Settle((unsigned int)(MCLK_DEF*1000*0.95), 
+    252          					(unsigned int) (MCLK_DEF*32768*32*0.95/32768));		// 0.95 is a clock compensation Factor.
+    253          
+    254              // Worst-case settling time for the DCO when the DCO range bits have been
+    255              // changed is n x 32 x 32 x f_MCLK / f_FLL_reference. See UCS chapter in 5xx
+    256              // UG for optimization.
+    257              // 32 x 32 x 16 MHz / 32,768 Hz = 250000 = MCLK cycles for DCO to settle
+    258              __delay_cycles(500000);
+    259          
+    260              // Loop until XT1 & DCO fault flag is cleared
+    261              /*do
+    262              {
+    263                  UCSCTL7 &= ~( DCOFFG);
+    264                  // Clear XT2,XT1,DCO fault flags
+    265                  SFRIFG1 &= ~OFIFG;                 // Clear fault flags
+    266              } while (SFRIFG1 & OFIFG);             // Test oscillator fault flag
+    267          	*/
+    268          }
+    269          
+    270          
+    271          
+    272          
+    273          
+    274          
+    275          //
+    276          void SystemInit(void)
+    277          {
+    278            
+    279          	//
+    280            	// Setup Clock Source and Disturbution
+    281          	Init_System_Clock ();
+    282          #if Debug_UCA
+    283          	PJDIR |= BIT0 | BIT1 | BIT3;           // ACLK, MCLK, SMCLK set out to pins
+    284          	PJSEL |= BIT0 | BIT1 | BIT3;           // PJ.0,1,3 for debugging purposes.
+    285          #endif
+    286          
+    287          	
+    288          	//
+    289          	// INIT RS-485 UART
+    290          	Init_RS485_UART ();
+    291          	
+    292          	//
+    293          	// INIT Debug UART 
+    294          	Init_Debug_UART ();
+    295          	
+    296          	//
+    297          	// INIT SD24 ADC
+    298          	Init_SD24_Analog_Front_End();
+    299          	
+    300          	//Init_SD24_ADC ();
+    301          
+    302          	/********REF Init********/
+    303          	while (REFCTL0 & REFGENBUSY) ;          // If ref generator busy, WAIT
+    304          	REFCTL0 |= REFON | REFVSEL_2; 			// REF enable. REF be controlled via the REFCTL register
+    305          											// Reference voltage : 2.5V
+    306          	__delay_cycles(75);                     // Delay (~75us) for Ref to settle
+    307          
+    308          	
+    309          
+    310          
+    311          	/********ADC10_A Init********/
+    312          	P1SEL |= BIT2;                          // Set P1.2 to non-IO
+    313          	ADC10CTL0 = ADC10SHT_2 | ADC10ON;       // S&H=16 ADC clks, Enable ADC10
+    314          	ADC10CTL1 |= ADC10SHP;                  // ADCCLK = MODOSC; sampling timer
+    315          	ADC10CTL2 |= ADC10RES;                  // 10-bit conversion results
+    316          	ADC10IE |= ADC10IE0;                    // Enable ADC conv cmplete interrupt
+    317          	//ADC10MCTL0 |= ADC10INCH_0 | ADC10SREF_1;// A0 ADC input select; Vref=2.5V
+    318                  ADC10MCTL0 |= ADC10INCH_0 | ADC10SREF_0;// A0 ADC input select; Vref=AVCC 3.3V
+    319          	
+    320          	
+    321          	//
+    322          	// Protocol Timer
+    323          	Init_Timer_For_BRDProtocol ();
+    324          	
+    325          	 Init_RTC ();
+    326          	
+    327          	//ADC10CTL0 |= ADC10ENC | ADC10SC;
+    328          	//__bis_SR_register(GIE);
+    329            
+    330              
+    331          }
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+       4  Init_Debug_UART
+       4  Init_RS485_UART
+            4 -> Init_Timer_For_RS485
+       4  Init_SD24_ADC
+       4  Init_SD24_Analog_Front_End
+       4  Init_System_Clock
+            4 -> Init_FLL_Settle
+            4 -> SetVCore
+       4  Init_Timer_For_RS485
+       4  SystemInit
+            4 -> Init_Debug_UART
+            4 -> Init_RS485_UART
+            4 -> Init_RTC
+            4 -> Init_SD24_Analog_Front_End
+            4 -> Init_System_Clock
+            4 -> Init_Timer_For_BRDProtocol
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      46  Init_Debug_UART
+      68  Init_RS485_UART
+      38  Init_SD24_ADC
+      64  Init_SD24_Analog_Front_End
+      76  Init_System_Clock
+      14  Init_Timer_For_RS485
+      80  SystemInit
+       2  TA1CCR0
+       2  TA1CCTL0
+       2  _A_ADC10CTL0_L
+       2  _A_ADC10CTL1_L
+       2  _A_ADC10CTL2_L
+       2  _A_ADC10IE_L
+       2  _A_ADC10MCTL0_L
+       2  _A_PADIR_L
+       2  _A_PAOUT_L
+       2  _A_PASEL_L
+       2  _A_REFCTL0_L
+       2  _A_SD24BCCTL0_L
+       2  _A_SD24BCCTL1_L
+       2  _A_SD24BCTL0_L
+       2  _A_SD24BCTL1_L
+       2  _A_SD24BIE_L
+       2  _A_SD24BINCTL0_L
+       2  _A_SD24BINCTL1_L
+       2  _A_SD24BOSR0_L
+       2  _A_SD24BOSR1_L
+       2  _A_UCA1BRW_L
+       2  _A_UCA1CTLW0_L
+       2  _A_UCA1IE_L
+       2  _A_UCA1MCTLW_L
+       2  _A_UCA2BRW_L
+       2  _A_UCA2CTLW0_L
+       2  _A_UCA2IE_L
+       2  _A_UCA2MCTLW_L
+       2  _A_UCSCTL3_L
+       2  _A_UCSCTL4_L
+       2  _A_UCSCTL6_L
+       2  _A_WDTCTL_L
+
+ 
+ 386 bytes in segment CODE
+  64 bytes in segment DATA16_AN
+ 
+ 386 bytes of CODE memory
+   0 bytes of DATA memory (+ 64 bytes shared)
+
+Errors: none
+Warnings: none
